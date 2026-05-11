@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - La Polla</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body class="antialiased bg-gray-900 text-white min-h-screen">
+
+    <!-- Login -->
+    <div id="admin-login" class="flex items-center justify-center min-h-screen">
+        <div class="glass p-8 rounded-2xl w-full max-w-sm shadow-2xl">
+            <h2 class="text-2xl font-bold mb-6 text-center text-indigo-400">Acceso Admin</h2>
+            <form id="form-login" class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Usuario</label>
+                    <input type="text" id="username" required class="w-full px-4 py-2 rounded bg-gray-800 border border-gray-700">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Contraseña</label>
+                    <input type="password" id="password" required class="w-full px-4 py-2 rounded bg-gray-800 border border-gray-700">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded transition mt-4">Entrar</button>
+                <div id="login-error" class="text-red-400 text-sm text-center hidden mt-2">Credenciales inválidas</div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="admin-dashboard" class="hidden min-h-screen flex flex-col">
+        <nav class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center">
+                        <span class="text-xl font-bold text-indigo-400">AdminPanel</span>
+                        <div class="hidden md:block ml-10 flex items-baseline space-x-4">
+                            <button onclick="switchTab('jugadas')" class="nav-tab px-3 py-2 rounded-md text-sm font-medium bg-gray-900 text-white">Jugadas</button>
+                            <button onclick="switchTab('resultados')" class="nav-tab px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700">Resultados</button>
+                            <button onclick="switchTab('config')" class="nav-tab px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700">Configuración</button>
+                        </div>
+                    </div>
+                    <button id="btn-logout" class="text-sm text-red-400 hover:text-red-300">Cerrar Sesión</button>
+                </div>
+            </div>
+            <!-- Mobile Menu (simplified) -->
+            <div class="md:hidden border-t border-gray-700 flex overflow-x-auto">
+                <button onclick="switchTab('jugadas')" class="nav-tab flex-1 px-3 py-3 text-sm text-center bg-gray-900 border-r border-gray-700">Jugadas</button>
+                <button onclick="switchTab('resultados')" class="nav-tab flex-1 px-3 py-3 text-sm text-center text-gray-400 border-r border-gray-700">Resultados</button>
+                <button onclick="switchTab('config')" class="nav-tab flex-1 px-3 py-3 text-sm text-center text-gray-400">Config</button>
+            </div>
+        </nav>
+
+        <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+            
+            <!-- Tab: Jugadas -->
+            <div id="tab-jugadas" class="tab-content active">
+                <h2 class="text-2xl font-bold mb-4">Gestión de Jugadas</h2>
+                <div class="overflow-x-auto bg-gray-800 rounded-lg border border-gray-700">
+                    <table class="min-w-full divide-y divide-gray-700 text-sm">
+                        <thead class="bg-gray-900">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">ID</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Jugador</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Teléfono</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Aciertos</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Estado Pago</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-jugadas" class="divide-y divide-gray-700 bg-gray-800">
+                            <!-- JS Inject -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Resultados -->
+            <div id="tab-resultados" class="tab-content hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass p-6 rounded-xl border border-gray-700">
+                        <h2 class="text-xl font-bold mb-4">Cargar Resultados del Día</h2>
+                        <form id="form-resultados" class="space-y-4">
+                            <div>
+                                <label class="block text-sm mb-1 text-gray-400">Números que salieron hoy (separados por coma)</label>
+                                <input type="text" id="numeros_ganadores" required placeholder="Ej: 05, 12, 44, 89" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
+                            </div>
+                            <button type="submit" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded transition">
+                                Guardar y Recalcular Aciertos
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="glass p-6 rounded-xl border border-gray-700">
+                        <h2 class="text-xl font-bold mb-4 text-orange-400">Gestión de Sorteos</h2>
+                        <p class="text-sm text-gray-400 mb-4">Si alguien ya ganó el pozo, cierra el sorteo actual e inicia uno nuevo.</p>
+                        
+                        <div class="space-y-3">
+                            <button id="btn-cerrar-sorteo" class="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded transition">
+                                Cerrar Sorteo Actual
+                            </button>
+                            <hr class="border-gray-700">
+                            <form id="form-nuevo-sorteo" class="flex gap-2">
+                                <input type="text" id="nuevo_sorteo_nombre" required placeholder="Nombre (Ej: Semana 15)" class="flex-1 px-3 py-2 rounded bg-gray-900 border border-gray-700 text-sm">
+                                <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded font-bold transition text-sm">
+                                    Crear Sorteo
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Configuración -->
+            <div id="tab-config" class="tab-content hidden max-w-lg">
+                <div class="glass p-6 rounded-xl border border-gray-700">
+                    <h2 class="text-xl font-bold mb-4">Ajustes del Sistema</h2>
+                    <form id="form-config" class="space-y-4">
+                        <div>
+                            <label class="block text-sm mb-1 text-gray-400">WhatsApp (sin +)</label>
+                            <input type="text" id="conf-wp" required class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
+                        </div>
+                        <div>
+                            <label class="block text-sm mb-1 text-gray-400">Alias MP / CBU</label>
+                            <input type="text" id="conf-alias" required class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
+                        </div>
+                        <div>
+                            <label class="block text-sm mb-1 text-gray-400">Titular de Cuenta</label>
+                            <input type="text" id="conf-titular" required class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
+                        </div>
+                        <hr class="border-gray-700">
+                        <h3 class="text-md font-bold text-orange-400">Credenciales Admin</h3>
+                        <div>
+                            <label class="block text-sm mb-1 text-gray-400">Nuevo Usuario</label>
+                            <input type="text" id="conf-user" required class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
+                        </div>
+                        <div>
+                            <label class="block text-sm mb-1 text-gray-400">Nueva Contraseña</label>
+                            <input type="text" id="conf-pass" required class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
+                        </div>
+
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded transition mt-4">Guardar Cambios</button>
+                    </form>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="/assets/js/admin.js"></script>
+</body>
+</html>

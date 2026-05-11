@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Polla - Juega y Gana</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body class="antialiased">
+
+    <!-- Navbar -->
+    <nav class="glass sticky top-0 z-50 border-b border-gray-800">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+                🎰 La Polla
+            </h1>
+            <a href="/mis-jugadas.html" class="text-sm text-indigo-300 hover:text-white transition">Mis Jugadas</a>
+        </div>
+    </nav>
+
+    <main class="max-w-xl mx-auto px-4 py-8">
+        
+        <!-- Step 1: Datos del Jugador -->
+        <div id="step-1" class="step-section active glass rounded-2xl p-6 shadow-2xl">
+            <div class="mb-6 text-center">
+                <h2 class="text-2xl font-bold mb-2">Ingresa tus Datos</h2>
+                <p class="text-gray-400 text-sm">Necesitamos esto para pagarte los premios y registrar tus líneas.</p>
+            </div>
+            
+            <form id="form-jugador" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-300">Nombre Completo</label>
+                    <input type="text" id="nombre" required class="w-full px-4 py-3 rounded-xl">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-300">Teléfono (WhatsApp)</label>
+                    <input type="tel" id="telefono" required placeholder="Ej: 5491123456789" class="w-full px-4 py-3 rounded-xl">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-300">DNI o CUIL</label>
+                    <input type="text" id="dni" class="w-full px-4 py-3 rounded-xl">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-300">Alias para cobrar premio</label>
+                    <input type="text" id="alias" required class="w-full px-4 py-3 rounded-xl">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-300">Nombre del Titular del Alias</label>
+                    <input type="text" id="titular" required class="w-full px-4 py-3 rounded-xl">
+                </div>
+                
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl shadow-lg transition transform hover:-translate-y-1 mt-6">
+                    Continuar a Jugar 🚀
+                </button>
+            </form>
+        </div>
+
+        <!-- Step 2: Carga de Líneas -->
+        <div id="step-2" class="step-section glass rounded-2xl p-6 shadow-2xl">
+            <div class="mb-4 text-center">
+                <h2 class="text-2xl font-bold">Elige tus 10 Números</h2>
+                <p class="text-gray-400 text-sm mt-1">Línea <span id="linea-actual">1</span> | Seleccionados: <span id="contador-numeros" class="text-indigo-400 font-bold">0</span>/10</p>
+                <div id="info-gratis" class="hidden mt-2 text-green-400 text-sm font-semibold border border-green-500/30 bg-green-500/10 py-1 px-3 rounded-full inline-block">
+                    ¡Tienes <span id="cantidad-gratis">0</span> líneas gratis!
+                </div>
+            </div>
+
+            <div id="grid-numeros" class="number-grid my-6">
+                <!-- Generado por JS -->
+            </div>
+
+            <div class="flex gap-3">
+                <button id="btn-agregar-linea" disabled class="flex-1 bg-gray-700 text-gray-400 font-bold py-3 rounded-xl transition cursor-not-allowed">
+                    Guardar Línea
+                </button>
+            </div>
+
+            <div id="lineas-guardadas-container" class="mt-6 hidden">
+                <h3 class="text-lg font-semibold mb-2 border-b border-gray-700 pb-2">Tus líneas elegidas:</h3>
+                <ul id="lista-lineas" class="space-y-2 text-sm text-gray-300"></ul>
+                
+                <button id="btn-ir-checkout" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl shadow-lg transition transform hover:-translate-y-1 mt-4">
+                    Finalizar y Pagar ✅
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 3: Checkout -->
+        <div id="step-3" class="step-section glass rounded-2xl p-6 shadow-2xl">
+            <div class="text-center mb-6">
+                <h2 class="text-3xl font-extrabold text-green-400 mb-2">¡Casi listo!</h2>
+                <p class="text-gray-300">Resumen de tu jugada</p>
+            </div>
+
+            <div class="bg-slate-800/50 rounded-xl p-4 mb-6 border border-slate-700">
+                <div class="flex justify-between mb-2">
+                    <span class="text-gray-400">Líneas elegidas:</span>
+                    <span id="resumen-cantidad" class="font-bold">0</span>
+                </div>
+                <div class="flex justify-between mb-2">
+                    <span class="text-gray-400">Costo por línea:</span>
+                    <span class="font-bold">$500</span>
+                </div>
+                <div class="flex justify-between mb-2 text-green-400 hidden" id="resumen-descuento-container">
+                    <span>Descuento (Líneas Gratis):</span>
+                    <span id="resumen-descuento" class="font-bold">-$0</span>
+                </div>
+                <div class="border-t border-slate-600 mt-3 pt-3 flex justify-between items-center">
+                    <span class="text-lg font-bold text-gray-300">Total a Pagar:</span>
+                    <span id="resumen-total" class="text-2xl font-extrabold text-white">$0</span>
+                </div>
+            </div>
+
+            <div class="bg-indigo-900/30 border border-indigo-500/30 rounded-xl p-4 mb-6 text-center">
+                <h3 class="text-sm text-indigo-300 mb-2">Realiza la transferencia a:</h3>
+                <p class="font-bold text-lg mb-1" id="config-titular">Cargando...</p>
+                <div class="flex items-center justify-center gap-2">
+                    <span class="text-gray-400 text-sm">Alias:</span>
+                    <code class="bg-black/40 px-2 py-1 rounded text-indigo-300" id="config-alias">Cargando...</code>
+                </div>
+            </div>
+
+            <button id="btn-whatsapp" class="w-full bg-[#25D366] hover:bg-[#1ebd5a] text-white font-bold py-4 rounded-xl shadow-lg transition transform hover:-translate-y-1 flex items-center justify-center gap-2 text-lg">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.418-.099.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-3.825 3.113-6.937 6.937-6.937 3.825 0 6.938 3.112 6.938 6.937 0 3.825-3.113 6.938-6.938 6.938z"/></svg>
+                Enviar WhatsApp al Admin
+            </button>
+            <p class="text-xs text-center text-gray-500 mt-4">Al hacer clic, se abrirá WhatsApp con el resumen para enviar el comprobante de pago.</p>
+        </div>
+
+    </main>
+
+    <script src="/assets/js/main.js"></script>
+</body>
+</html>

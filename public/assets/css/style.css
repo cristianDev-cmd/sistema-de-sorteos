@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+:root {
+  --primary: #4F46E5;
+  --primary-hover: #4338CA;
+  --secondary: #10B981;
+  --bg-dark: #0F172A;
+  --card-bg: rgba(30, 41, 59, 0.7);
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--bg-dark);
+  color: #F8FAFC;
+  min-height: 100vh;
+  background-image: radial-gradient(circle at top right, #1E1B4B, #0F172A);
+  background-attachment: fixed;
+}
+
+/* Glassmorphism utilities */
+.glass {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Grilla de números */
+.number-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 6px;
+}
+
+@media (max-width: 600px) {
+  .number-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.number-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px 0;
+  text-align: center;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.number-btn:hover {
+  background: rgba(79, 70, 229, 0.3);
+  transform: translateY(-2px);
+}
+
+.number-btn.selected {
+  background: var(--primary);
+  border-color: var(--primary-hover);
+  box-shadow: 0 0 10px rgba(79, 70, 229, 0.6);
+  color: white;
+}
+
+.number-btn.winner {
+    background: var(--secondary);
+    border-color: #059669;
+    color: white;
+}
+
+/* Steps transitions */
+.step-section {
+  display: none;
+  animation: fadeIn 0.4s ease forwards;
+}
+.step-section.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom inputs */
+input {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+}
+input:focus {
+  border-color: var(--primary) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.3) !important;
+}
