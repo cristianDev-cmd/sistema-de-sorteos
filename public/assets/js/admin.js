@@ -48,12 +48,13 @@ document.getElementById('btn-logout').addEventListener('click', () => {
 });
 
 // TABS
-function switchTab(tabId) {
+function switchTab(e, tabId) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-    document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+    const targetTab = document.getElementById(`tab-${tabId}`);
+    if (targetTab) targetTab.classList.remove('hidden');
     
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active', 'text-white'));
-    event?.target?.classList?.add('active', 'text-white');
+    if (e && e.target) e.target.classList.add('active', 'text-white');
 
     if (tabId === 'jugadas') cargarJugadas(document.getElementById('filtro-semana').value);
     if (tabId === 'jugadores') cargarJugadores();
@@ -94,9 +95,22 @@ async function cargarJugadas(sorteoId = '') {
     
     try {
         let winningNumbers = [];
-        if (sorteoId) {
+        let sIdForWinning = sorteoId;
+        
+        // Si no hay sorteoId (Todas las semanas), intentamos obtener el último sorteo para el resaltado
+        if (!sIdForWinning) {
             try {
-                const resRes = await fetch(`/api/admin/resultados-sorteo?sorteo_id=${sorteoId}`, {
+                const resS = await fetch('/api/admin/sorteos', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (resS.ok) {
+                    const sorteos = await resS.json();
+                    if (sorteos.length > 0) sIdForWinning = sorteos[0].id;
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        if (sIdForWinning) {
+            try {
+                const resRes = await fetch(`/api/admin/resultados-sorteo?sorteo_id=${sIdForWinning}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (resRes.ok) winningNumbers = await resRes.json();
@@ -153,8 +167,9 @@ async function cargarJugadas(sorteoId = '') {
             const nums = j.numeros_elegidos.split(',');
             const numsHtml = nums.map(n => {
                 const num = n.trim();
-                const isMatch = winningNumbers.includes(num);
-                return `<span class="${isMatch ? 'text-green-400 font-bold' : ''}">${num}</span>`;
+                // Aseguramos que la comparación sea entre strings limpios
+                const isMatch = winningNumbers.some(wn => String(wn).trim() === num);
+                return `<span class="${isMatch ? 'text-green-400 font-bold' : 'text-gray-300'}">${num}</span>`;
             }).join(' - ');
 
             detailTr.innerHTML = `

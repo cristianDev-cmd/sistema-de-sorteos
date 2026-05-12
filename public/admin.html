@@ -85,11 +85,11 @@
             <!-- Navigation Tabs -->
             <div class="mb-8">
                 <div class="flex gap-2 overflow-x-auto pb-2 border-b border-gray-800">
-                    <button onclick="switchTab('jugadas')" class="tab-btn active px-4 py-2 rounded-lg font-medium transition whitespace-nowrap text-gray-400 hover:text-white">Jugadas</button>
-                    <button onclick="switchTab('jugadores')" class="tab-btn px-4 py-2 rounded-lg font-medium transition whitespace-nowrap text-gray-400 hover:text-white">Jugadores</button>
-                    <button onclick="switchTab('resultados')" class="tab-btn px-4 py-2 rounded-lg font-medium transition whitespace-nowrap text-gray-400 hover:text-white">Cargar Resultados</button>
-                    <button onclick="switchTab('sorteos')" class="tab-btn px-4 py-2 rounded-lg font-medium transition whitespace-nowrap text-gray-400 hover:text-white">Gestionar Sorteos</button>
-                    <button onclick="switchTab('config')" class="tab-btn px-4 py-2 rounded-lg font-medium transition whitespace-nowrap text-gray-400 hover:text-white">Configuración</button>
+                    <button onclick="switchTab(event, 'jugadas')" class="tab-btn active px-4 py-2 rounded-lg font-medium transition whitespace-nowrap text-gray-400 hover:text-white">Jugadas</button>
+                    <button onclick="switchTab(event, 'jugadores')" class="tab-btn px-4 py-2 rounded-lg font-medium transition whitespace-nowrap text-gray-400 hover:text-white">Jugadores</button>
+                    <button onclick="switchTab(event, 'resultados')" class="tab-btn px-4 py-2 rounded-lg font-medium transition whitespace-nowrap text-gray-400 hover:text-white">Cargar Resultados</button>
+                    <button onclick="switchTab(event, 'sorteos')" class="tab-btn px-4 py-2 rounded-lg font-medium transition whitespace-nowrap text-gray-400 hover:text-white">Gestionar Sorteos</button>
+                    <button onclick="switchTab(event, 'config')" class="tab-btn px-4 py-2 rounded-lg font-medium transition whitespace-nowrap text-gray-400 hover:text-white">Configuración</button>
                 </div>
             </div>
             
@@ -119,6 +119,7 @@
                         <!-- Inyectado por JS -->
                     </tbody>
                 </table>
+                </div>
             </div>
             
             <!-- Tab: Jugadores -->
@@ -141,7 +142,6 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
             </div>
 
             <!-- Tab: Resultados -->
