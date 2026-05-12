@@ -18,7 +18,8 @@ export async function onRequestPost({ request, env }) {
         const auth = request.headers.get("Authorization");
         if (!auth) return new Response("No autorizado", { status: 401 });
 
-        const { action, id } = await request.json();
+        const body = await request.json();
+        const { action, id, nombre_referencia } = body;
 
         if (action === "cerrar") {
             const fecha_fin = new Date().toISOString();
@@ -26,7 +27,6 @@ export async function onRequestPost({ request, env }) {
                 "UPDATE sorteos SET estado = 'Cerrado', fecha_fin = ? WHERE id = ?"
             ).bind(fecha_fin, id).run();
         } else if (action === "crear") {
-            const { nombre_referencia } = await request.json();
             await env.DB.prepare(
                 "INSERT INTO sorteos (nombre_referencia) VALUES (?)"
             ).bind(nombre_referencia).run();
