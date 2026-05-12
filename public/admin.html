@@ -56,7 +56,14 @@
             
             <!-- Tab: Jugadas -->
             <div id="tab-jugadas" class="tab-content active">
-                <h2 class="text-2xl font-bold mb-4">Gestión de Jugadas</h2>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Gestión de Jugadas</h2>
+                    <div>
+                        <select id="filtro-semana" class="bg-gray-800 text-white border border-gray-700 rounded px-3 py-2 text-sm">
+                            <option value="">Cargando semanas...</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="overflow-x-auto bg-gray-800 rounded-lg border border-gray-700">
                     <table class="min-w-full divide-y divide-gray-700 text-sm">
                         <thead class="bg-gray-900">
@@ -82,6 +89,18 @@
                     <div class="glass p-6 rounded-xl border border-gray-700">
                         <h2 class="text-xl font-bold mb-4">Cargar Resultados del Día</h2>
                         <form id="form-resultados" class="space-y-4">
+                            <div>
+                                <label class="block text-sm mb-1 text-gray-400">Día de la semana</label>
+                                <select id="dia_semana" required class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
+                                    <option value="Lunes">Lunes</option>
+                                    <option value="Martes">Martes</option>
+                                    <option value="Miércoles">Miércoles</option>
+                                    <option value="Jueves">Jueves</option>
+                                    <option value="Viernes">Viernes</option>
+                                    <option value="Sábado">Sábado</option>
+                                    <option value="Domingo">Domingo</option>
+                                </select>
+                            </div>
                             <div>
                                 <label class="block text-sm mb-1 text-gray-400">Números que salieron hoy (separados por coma)</label>
                                 <input type="text" id="numeros_ganadores" required placeholder="Ej: 05, 12, 44, 89" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">

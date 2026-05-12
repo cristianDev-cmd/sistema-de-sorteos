@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS sorteos (
 CREATE TABLE IF NOT EXISTS sorteos_diarios (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     sorteo_id INTEGER NOT NULL,
+    dia_semana TEXT NOT NULL, -- ej: 'Lunes'
     fecha_dia TEXT NOT NULL, -- ej: '2023-10-25'
     numeros_ganadores_dia TEXT NOT NULL, -- ej: '12,34,55,89'
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

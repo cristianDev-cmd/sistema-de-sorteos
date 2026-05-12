@@ -4,7 +4,7 @@ export async function onRequestPost({ request, env }) {
         if (!auth) return new Response("No autorizado", { status: 401 });
 
         const body = await request.json();
-        const { numeros_ganadores_dia } = body; // ej: "12,34,55"
+        const { numeros_ganadores_dia, dia_semana } = body;
 
         // Obtener sorteo abierto
         const { results: sorteos } = await env.DB.prepare(
@@ -19,8 +19,8 @@ export async function onRequestPost({ request, env }) {
 
         // Insertar resultado diario
         await env.DB.prepare(
-            "INSERT INTO sorteos_diarios (sorteo_id, fecha_dia, numeros_ganadores_dia) VALUES (?, ?, ?)"
-        ).bind(sorteo_id, fecha_dia, numeros_ganadores_dia).run();
+            "INSERT INTO sorteos_diarios (sorteo_id, dia_semana, fecha_dia, numeros_ganadores_dia) VALUES (?, ?, ?, ?)"
+        ).bind(sorteo_id, dia_semana, fecha_dia, numeros_ganadores_dia).run();
 
         // Recalcular aciertos de todas las jugadas activas
         // 1. Obtener todos los resultados del sorteo

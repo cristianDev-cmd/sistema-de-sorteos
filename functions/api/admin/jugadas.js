@@ -3,13 +3,26 @@ export async function onRequestGet({ request, env }) {
         const auth = request.headers.get("Authorization");
         if (!auth) return new Response("No autorizado", { status: 401 });
 
-        const { results } = await env.DB.prepare(`
+        const url = new URL(request.url);
+        const sorteoId = url.searchParams.get('sorteo_id');
+        
+        let query = `
             SELECT j.id, ju.nombre_completo, ju.telefono, s.nombre_referencia, j.numeros_elegidos, j.pagada, j.es_linea_gratis, j.aciertos_actuales
             FROM jugadas j
             JOIN jugadores ju ON j.jugador_id = ju.id
             JOIN sorteos s ON j.sorteo_id = s.id
-            ORDER BY j.id DESC
-        `).all();
+        `;
+        let results;
+
+        if (sorteoId) {
+            query += " WHERE j.sorteo_id = ? ORDER BY j.id DESC";
+            const stmt = await env.DB.prepare(query).bind(sorteoId);
+            results = (await stmt.all()).results;
+        } else {
+            query += " ORDER BY j.id DESC";
+            const stmt = await env.DB.prepare(query);
+            results = (await stmt.all()).results;
+        }
 
         return new Response(JSON.stringify(results || []), { status: 200 });
     } catch (e) {

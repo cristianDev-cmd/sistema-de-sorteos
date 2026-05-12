@@ -34,63 +34,124 @@ document.addEventListener('DOMContentLoaded', async () => {
         gridNumeros.appendChild(btn);
     }
 
-    // Cargar config del admin
+    // Cargar config del admin y Sorteo Activo
     try {
-        const res = await fetch('/api/config');
-        if (res.ok) {
-            configuracionAdmin = await res.json();
+        const [resConfig, resSorteo] = await Promise.all([
+            fetch('/api/config'),
+            fetch('/api/sorteo-activo')
+        ]);
+        
+        if (resConfig.ok) {
+            configuracionAdmin = await resConfig.json();
             document.getElementById('config-titular').textContent = configuracionAdmin.admin_titular;
             document.getElementById('config-alias').textContent = configuracionAdmin.admin_alias;
         }
+
+        if (resSorteo.ok) {
+            const sorteoInfo = await resSorteo.json();
+            if (!sorteoInfo.activo && !sorteoInfo.nombre_referencia) {
+                document.getElementById('step-1').classList.remove('active');
+                document.getElementById('step-1').classList.add('hidden');
+                document.getElementById('no-sorteo-block').classList.remove('hidden');
+            } else {
+                const badge = document.getElementById('sorteo-activo-badge');
+                badge.textContent = sorteoInfo.nombre_referencia;
+                badge.classList.remove('hidden');
+            }
+        }
     } catch (e) {
-        console.error("Error al cargar config", e);
+        console.error("Error al cargar config o sorteo", e);
     }
 });
 
-// Paso 1: Guardar Jugador
+// Paso 1: Login o Registro
 formJugador.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = formJugador.querySelector('button');
     btn.disabled = true;
-    btn.textContent = 'Guardando...';
+    btn.textContent = 'Verificando...';
 
-    const data = {
-        nombre_completo: document.getElementById('nombre').value,
-        telefono: document.getElementById('telefono').value,
-        dni_cuil: document.getElementById('dni').value,
-        alias_para_cobrar: document.getElementById('alias').value,
-        titular_cuenta: document.getElementById('titular').value
-    };
+    const telefono = document.getElementById('telefono').value;
+    const registroExtra = document.getElementById('registro-extra');
 
-    try {
-        const res = await fetch('/api/jugadores', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-        
-        if (res.ok) {
-            const result = await res.json();
-            jugadorData = { ...data, id: result.id, lineas_gratis: result.lineas_gratis };
-            
-            if (jugadorData.lineas_gratis > 0) {
-                infoGratis.classList.remove('hidden');
-                cantidadGratis.textContent = jugadorData.lineas_gratis;
+    // Si el registro extra está oculto, verificamos si existe
+    if (registroExtra.classList.contains('hidden')) {
+        try {
+            const res = await fetch(`/api/jugadores?telefono=${encodeURIComponent(telefono)}`);
+            if (res.ok) {
+                // Existe
+                const result = await res.json();
+                jugadorData = { ...result, id: result.id, lineas_gratis: result.lineas_gratis_disponibles };
+                
+                if (jugadorData.lineas_gratis > 0) {
+                    infoGratis.classList.remove('hidden');
+                    cantidadGratis.textContent = jugadorData.lineas_gratis;
+                }
+
+                step1.classList.remove('active');
+                step1.classList.add('hidden');
+                step2.classList.add('active');
+            } else if (res.status === 404) {
+                // No existe, mostrar registro
+                registroExtra.classList.remove('hidden');
+                document.getElementById('nombre').required = true;
+                document.getElementById('alias').required = true;
+                document.getElementById('titular').required = true;
+                btn.textContent = 'Guardar y Continuar 🚀';
+                btn.disabled = false;
+                return;
+            } else {
+                alert("Error al verificar.");
+                btn.disabled = false;
+                btn.textContent = 'Continuar a Jugar 🚀';
             }
-
-            // Transición a paso 2
-            step1.classList.remove('active');
-            step2.classList.add('active');
-        } else {
-            alert("Error al guardar datos. Revisa la conexión.");
+        } catch (error) {
+            console.error(error);
+            alert("Error de red.");
             btn.disabled = false;
             btn.textContent = 'Continuar a Jugar 🚀';
         }
-    } catch (error) {
-        console.error(error);
-        alert("Error de red.");
-        btn.disabled = false;
-        btn.textContent = 'Continuar a Jugar 🚀';
+    } else {
+        // Guardar nuevo o actualizar
+        btn.textContent = 'Guardando...';
+        const data = {
+            nombre_completo: document.getElementById('nombre').value,
+            telefono: telefono,
+            dni_cuil: document.getElementById('dni').value,
+            alias_para_cobrar: document.getElementById('alias').value,
+            titular_cuenta: document.getElementById('titular').value
+        };
+
+        try {
+            const res = await fetch('/api/jugadores', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            if (res.ok) {
+                const result = await res.json();
+                jugadorData = { ...data, id: result.id, lineas_gratis: result.lineas_gratis };
+                
+                if (jugadorData.lineas_gratis > 0) {
+                    infoGratis.classList.remove('hidden');
+                    cantidadGratis.textContent = jugadorData.lineas_gratis;
+                }
+
+                step1.classList.remove('active');
+                step1.classList.add('hidden');
+                step2.classList.add('active');
+            } else {
+                alert("Error al guardar datos.");
+                btn.disabled = false;
+                btn.textContent = 'Guardar y Continuar 🚀';
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error de red.");
+            btn.disabled = false;
+            btn.textContent = 'Guardar y Continuar 🚀';
+        }
     }
 });
 

@@ -1,0 +1,8 @@
+name = "sistema-de-sorteos"
+compatibility_date = "2024-05-11"
+pages_build_output_dir = "./public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sistema-sorteos-db"
+database_id = "9a4d36c1-d9ac-4cbf-82e5-d06479c3447f"

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte Público - La Polla</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body class="antialiased bg-gray-900 text-white min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="glass sticky top-0 z-50 border-b border-gray-800">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+                🎰 La Polla
+            </h1>
+            <a href="/" class="text-sm text-indigo-300 hover:text-white transition font-medium">Volver a Jugar</a>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <div class="text-center mb-8">
+            <h2 id="reporte-titulo" class="text-3xl font-extrabold mb-2">Reporte de la Semana</h2>
+            <p id="reporte-semana-nombre" class="text-indigo-400 text-lg font-bold">Cargando...</p>
+        </div>
+
+        <!-- Filtros -->
+        <div class="glass rounded-2xl p-6 mb-8 border border-gray-800 shadow-xl flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div class="w-full md:w-auto">
+                <label class="block text-xs text-gray-400 uppercase font-bold mb-1 ml-1">Filtrar por Semana</label>
+                <select id="filtro-semana" class="w-full md:w-64 bg-gray-800 text-white border border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                    <option value="">Cargando semanas...</option>
+                </select>
+            </div>
+            <div class="w-full md:w-auto flex-1">
+                <label class="block text-xs text-gray-400 uppercase font-bold mb-1 ml-1">Buscar Jugador</label>
+                <input type="text" id="filtro-nombre" placeholder="Ingresa nombre..." class="w-full bg-gray-800 text-white border border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none transition">
+            </div>
+        </div>
+
+        <!-- Resultados Diarios -->
+        <div id="resultados-diarios-section" class="mb-8 hidden">
+            <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                <span class="text-orange-400">🔥</span> Resultados del Sorteo
+            </h3>
+            <div id="grid-resultados" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <!-- Inyectado por JS -->
+            </div>
+        </div>
+
+        <!-- Tabla de Jugadas -->
+        <div class="glass rounded-2xl overflow-hidden border border-gray-800 shadow-2xl">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-800">
+                    <thead class="bg-gray-800/50">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">ID</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Jugador</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Números Jugados</th>
+                            <th class="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Aciertos</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-reporte" class="divide-y divide-gray-800">
+                        <!-- Inyectado por JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="no-jugadas" class="hidden p-12 text-center text-gray-500">
+                No hay jugadas pagadas registradas para esta semana.
+            </div>
+        </div>
+    </main>
+
+    <footer class="max-w-4xl mx-auto px-4 py-8 text-center text-gray-600 text-sm">
+        &copy; 2026 La Polla - Sistema de Sorteos
+    </footer>
+
+    <script src="/assets/js/reporte.js"></script>
+</body>
+</html>

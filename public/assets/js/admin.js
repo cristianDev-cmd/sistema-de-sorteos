@@ -59,16 +59,39 @@ function switchTab(tabId) {
 function mostrarDashboard() {
     loginSection.classList.add('hidden');
     dashboardSection.classList.remove('hidden');
+    cargarSorteosLista();
     switchTab('jugadas');
 }
 
+async function cargarSorteosLista() {
+    try {
+        const res = await fetch('/api/admin/sorteos-lista', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) {
+            const sorteos = await res.json();
+            const select = document.getElementById('filtro-semana');
+            select.innerHTML = '<option value="">Todas las semanas</option>';
+            sorteos.forEach(s => {
+                select.innerHTML += `<option value="${s.id}">${s.nombre_referencia} (${s.estado})</option>`;
+            });
+        }
+    } catch (e) {
+        console.error("Error al cargar sorteos");
+    }
+}
+
+document.getElementById('filtro-semana')?.addEventListener('change', (e) => {
+    cargarJugadas(e.target.value);
+});
+
 // Cargar Jugadas
-async function cargarJugadas() {
+async function cargarJugadas(sorteoId = '') {
     const tbody = document.getElementById('tbody-jugadas');
     tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4">Cargando...</td></tr>';
     
     try {
-        const res = await fetch('/api/admin/jugadas', {
+        let url = '/api/admin/jugadas';
+        if (sorteoId) url += `?sorteo_id=${sorteoId}`;
+        const res = await fetch(url, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         
@@ -79,10 +102,16 @@ async function cargarJugadas() {
         
         data.forEach(j => {
             const tr = document.createElement('tr');
+            tr.className = "cursor-pointer hover:bg-gray-700 transition";
+            tr.onclick = () => {
+                const detailRow = document.getElementById(`detail-${j.id}`);
+                detailRow.classList.toggle('hidden');
+            };
+            
             tr.innerHTML = `
                 <td class="px-4 py-3 whitespace-nowrap">#${j.id}</td>
                 <td class="px-4 py-3 whitespace-nowrap font-medium text-white">${j.nombre_completo}</td>
-                <td class="px-4 py-3 whitespace-nowrap text-indigo-300">
+                <td class="px-4 py-3 whitespace-nowrap text-indigo-300" onclick="event.stopPropagation()">
                     <a href="https://wa.me/${j.telefono}" target="_blank" class="hover:underline">${j.telefono}</a>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap">
@@ -94,13 +123,26 @@ async function cargarJugadas() {
                     </span>
                     ${j.es_linea_gratis ? '<span class="ml-1 px-2 py-1 text-xs rounded-full bg-indigo-500/20 text-indigo-300">Gratis</span>' : ''}
                 </td>
-                <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-medium" onclick="event.stopPropagation()">
                     <button onclick="togglePago(${j.id}, ${!j.pagada})" class="text-indigo-400 hover:text-indigo-300">
                         Marcar como ${j.pagada ? 'Pendiente' : 'Pagada'}
                     </button>
                 </td>
             `;
             tbody.appendChild(tr);
+
+            // Fila desplegable oculta
+            const detailTr = document.createElement('tr');
+            detailTr.id = `detail-${j.id}`;
+            detailTr.className = "hidden bg-gray-900 border-b border-gray-700";
+            detailTr.innerHTML = `
+                <td colspan="6" class="px-4 py-3">
+                    <div class="text-sm text-gray-300">
+                        <span class="font-bold text-indigo-400">Números jugados:</span> <span class="tracking-widest">${j.numeros_elegidos.split(',').join(' - ')}</span>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(detailTr);
         });
     } catch (e) {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-400">Error al cargar datos</td></tr>';
@@ -131,6 +173,7 @@ document.getElementById('form-resultados').addEventListener('submit', async (e) 
     btn.textContent = "Procesando...";
 
     const numeros = document.getElementById('numeros_ganadores').value;
+    const dia_semana = document.getElementById('dia_semana').value;
     
     try {
         const res = await fetch('/api/admin/resultados', {
@@ -139,7 +182,7 @@ document.getElementById('form-resultados').addEventListener('submit', async (e) 
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}` 
             },
-            body: JSON.stringify({ numeros_ganadores_dia: numeros })
+            body: JSON.stringify({ numeros_ganadores_dia: numeros, dia_semana })
         });
         
         if (res.ok) {

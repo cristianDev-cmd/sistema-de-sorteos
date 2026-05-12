@@ -32,3 +32,26 @@ export async function onRequestPost({ request, env }) {
         return new Response(JSON.stringify({ error: e.message }), { status: 500 });
     }
 }
+
+export async function onRequestGet({ request, env }) {
+    try {
+        const url = new URL(request.url);
+        const telefono = url.searchParams.get('telefono');
+
+        if (!telefono) {
+            return new Response(JSON.stringify({ error: "Teléfono requerido" }), { status: 400 });
+        }
+
+        const { results } = await env.DB.prepare(
+            "SELECT * FROM jugadores WHERE telefono = ?"
+        ).bind(telefono).all();
+
+        if (results && results.length > 0) {
+            return new Response(JSON.stringify(results[0]), { status: 200 });
+        } else {
+            return new Response(JSON.stringify({ found: false }), { status: 404 });
+        }
+    } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+    }
+}
