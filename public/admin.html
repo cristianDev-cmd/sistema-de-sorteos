@@ -181,11 +181,26 @@
                                 Cerrar Sorteo Actual
                             </button>
                             <hr class="border-gray-700">
-                            <form id="form-nuevo-sorteo" class="flex gap-2">
-                                <input type="text" id="nuevo_sorteo_nombre" required placeholder="Nombre (Ej: Semana 15)" class="flex-1 px-3 py-2 rounded bg-gray-900 border border-gray-700 text-sm">
-                                <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded font-bold transition text-sm">
-                                    Crear Sorteo
-                                </button>
+                            <form id="form-nuevo-sorteo" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm mb-1 text-gray-400">Nombre del Sorteo (ej: Semana 1 - Octubre)</label>
+                                    <input type="text" id="nuevo_sorteo_nombre" required class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
+                                </div>
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-sm mb-1 text-gray-400">Pozo Semana</label>
+                                        <input type="number" id="pozo_semana" value="0" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm mb-1 text-gray-400">Pozo Consuelo</label>
+                                        <input type="number" id="pozo_consuelo" value="0" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm mb-1 text-gray-400">Pozo Saladito</label>
+                                        <input type="number" id="pozo_saladito" value="0" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
+                                    </div>
+                                </div>
+                                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 py-2 rounded-lg font-bold transition">Crear Nuevo Sorteo</button>
                             </form>
                         </div>
                     </div>
@@ -196,32 +211,40 @@
             <div id="tab-config" class="tab-content hidden max-w-lg">
                 <div class="glass p-6 rounded-xl border border-gray-700">
                     <h2 class="text-xl font-bold mb-4">Ajustes del Sistema</h2>
-                    <form id="form-config" class="space-y-4">
-                        <div>
-                            <label class="block text-sm mb-1 text-gray-400">WhatsApp (sin +)</label>
-                            <input type="text" id="conf-wp" required class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
-                        </div>
-                        <div>
-                            <label class="block text-sm mb-1 text-gray-400">Alias MP / CBU</label>
-                            <input type="text" id="conf-alias" required class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
-                        </div>
-                        <div>
-                            <label class="block text-sm mb-1 text-gray-400">Titular de Cuenta</label>
-                            <input type="text" id="conf-titular" required class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
-                        </div>
-                        <hr class="border-gray-700">
-                        <h3 class="text-md font-bold text-orange-400">Credenciales Admin</h3>
-                        <div>
-                            <label class="block text-sm mb-1 text-gray-400">Nuevo Usuario</label>
-                            <input type="text" id="conf-user" required class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
-                        </div>
-                        <div>
-                            <label class="block text-sm mb-1 text-gray-400">Nueva Contraseña</label>
-                            <input type="text" id="conf-pass" required class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
-                        </div>
+                        <form id="form-config" class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm mb-1 text-gray-400">WhatsApp de Pagos</label>
+                                    <input type="text" id="conf-wp" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
+                                </div>
+                                <div>
+                                    <label class="block text-sm mb-1 text-gray-400">Precio por Línea ($)</label>
+                                    <input type="number" id="conf-precio" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm mb-1 text-gray-400">Alias MercadoPago</label>
+                                    <input type="text" id="conf-alias" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
+                                </div>
+                                <div>
+                                    <label class="block text-sm mb-1 text-gray-400">Titular de Cuenta</label>
+                                    <input type="text" id="conf-titular" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
+                                </div>
+                            </div>
+                            <hr class="border-gray-700">
+                            <h3 class="text-md font-bold text-orange-400">Credenciales Admin</h3>
+                            <div>
+                                <label class="block text-sm mb-1 text-gray-400">Nuevo Usuario</label>
+                                <input type="text" id="conf-user" required class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
+                            </div>
+                            <div>
+                                <label class="block text-sm mb-1 text-gray-400">Nueva Contraseña</label>
+                                <input type="text" id="conf-pass" required class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
+                            </div>
 
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded transition mt-4">Guardar Cambios</button>
-                    </form>
+                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded transition mt-4">Guardar Cambios</button>
+                        </form>
                 </div>
             </div>
 

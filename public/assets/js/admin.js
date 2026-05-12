@@ -268,14 +268,24 @@ document.getElementById('btn-cerrar-sorteo').addEventListener('click', async () 
     }
 });
 
-document.getElementById('form-nuevo-sorteo').addEventListener('submit', async (e) => {
+document.getElementById('form-nuevo-sorteo')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const nombre = document.getElementById('nuevo_sorteo_nombre').value;
+    const pozo_semana = document.getElementById('pozo_semana').value;
+    const pozo_consuelo = document.getElementById('pozo_consuelo').value;
+    const pozo_saladito = document.getElementById('pozo_saladito').value;
+
     try {
         await fetch('/api/admin/sorteos', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ action: 'crear', nombre_referencia: nombre })
+            body: JSON.stringify({ 
+                action: 'crear', 
+                nombre_referencia: nombre,
+                pozo_semana: parseFloat(pozo_semana) || 0,
+                pozo_consuelo: parseFloat(pozo_consuelo) || 0,
+                pozo_saladito: parseFloat(pozo_saladito) || 0
+            })
         });
         alert("Sorteo creado.");
         document.getElementById('nuevo_sorteo_nombre').value = '';
@@ -294,6 +304,7 @@ async function cargarConfig() {
             document.getElementById('conf-wp').value = data.admin_whatsapp;
             document.getElementById('conf-alias').value = data.admin_alias;
             document.getElementById('conf-titular').value = data.admin_titular;
+            document.getElementById('conf-precio').value = data.precio_linea || 1000;
         }
     } catch (e) { console.error(e) }
 }
@@ -311,6 +322,7 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
                 admin_whatsapp: document.getElementById('conf-wp').value,
                 admin_alias: document.getElementById('conf-alias').value,
                 admin_titular: document.getElementById('conf-titular').value,
+                precio_linea: parseFloat(document.getElementById('conf-precio').value) || 1000,
                 admin_user: document.getElementById('conf-user').value,
                 admin_password: document.getElementById('conf-pass').value
             })
@@ -426,6 +438,18 @@ document.getElementById('form-editar-jugador')?.addEventListener('submit', async
         btn.disabled = false;
     }
 });
+
+async function toggleMensual(id, valor) {
+    if(!confirm(`¿Marcar esta línea como Pago Mensual? (Se clonará automáticamente en los siguientes sorteos del mes)`)) return;
+    try {
+        await fetch('/api/admin/jugadas', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ id, es_mensual: valor })
+        });
+        cargarJugadas(document.getElementById('filtro-semana').value);
+    } catch (e) { alert("Error"); }
+}
 
 function logout() {
     document.getElementById('btn-logout').click();

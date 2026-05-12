@@ -36,9 +36,13 @@ export async function onRequestPut({ request, env }) {
         if (!auth) return new Response("No autorizado", { status: 401 });
 
         const body = await request.json();
-        const { id, pagada, numeros_elegidos } = body;
+        const { id, pagada, numeros_elegidos, es_mensual } = body;
 
-        if (numeros_elegidos !== undefined) {
+        if (es_mensual !== undefined) {
+            await env.DB.prepare(
+                "UPDATE jugadas SET es_mensual = ?, pagada = 1 WHERE id = ?"
+            ).bind(es_mensual ? 1 : 0, id).run();
+        } else if (numeros_elegidos !== undefined) {
             // Actualizar números y recalculamos aciertos
             // 1. Obtener sorteo_id de la jugada
             const jugada = await env.DB.prepare("SELECT sorteo_id FROM jugadas WHERE id = ?").bind(id).first();

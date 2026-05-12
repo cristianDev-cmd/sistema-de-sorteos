@@ -5,11 +5,11 @@ export async function onRequestGet({ request, env }) {
         let sorteoInfo;
 
         if (sorteoId) {
-            const { results } = await env.DB.prepare("SELECT id, nombre_referencia FROM sorteos WHERE id = ?").bind(sorteoId).all();
+            const { results } = await env.DB.prepare("SELECT id, nombre_referencia, pozo_semana, pozo_consuelo, pozo_saladito FROM sorteos WHERE id = ?").bind(sorteoId).all();
             if (results.length > 0) sorteoInfo = results[0];
         } else {
             // Default to the latest active or last created
-            const { results } = await env.DB.prepare("SELECT id, nombre_referencia FROM sorteos ORDER BY id DESC LIMIT 1").all();
+            const { results } = await env.DB.prepare("SELECT id, nombre_referencia, pozo_semana, pozo_consuelo, pozo_saladito FROM sorteos ORDER BY id DESC LIMIT 1").all();
             if (results.length > 0) sorteoInfo = results[0];
         }
 

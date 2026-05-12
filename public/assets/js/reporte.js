@@ -53,6 +53,17 @@ async function cargarReporte(sorteoId = '') {
             semanaNombre.textContent = data.sorteo.nombre_referencia;
             jugadasData = data.jugadas;
             
+            // Render Pozos
+            const sectionPozos = document.getElementById('section-pozos');
+            if (data.sorteo.pozo_semana || data.sorteo.pozo_consuelo || data.sorteo.pozo_saladito) {
+                sectionPozos.classList.remove('hidden');
+                document.getElementById('txt-pozo-semana').textContent = `$${data.sorteo.pozo_semana.toLocaleString()}`;
+                document.getElementById('txt-pozo-consuelo').textContent = `$${data.sorteo.pozo_consuelo.toLocaleString()}`;
+                document.getElementById('txt-pozo-saladito').textContent = `$${data.sorteo.pozo_saladito.toLocaleString()}`;
+            } else {
+                sectionPozos.classList.add('hidden');
+            }
+
             // Render Resultados
             const gridRes = document.getElementById('grid-resultados');
             gridRes.innerHTML = '';
@@ -104,8 +115,8 @@ function renderTabla(filtroNombre = '') {
                 ${j.numeros_elegidos.split(',').join(' - ')}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-center">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${j.aciertos_actuales >= 8 ? 'bg-green-500/20 text-green-400' : 'bg-gray-700/30 text-gray-400'}">
-                    ${j.aciertos_actuales}
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${j.aciertos_actuales >= 8 ? 'bg-green-500/20 text-green-400' : (j.aciertos_actuales === 0 ? 'bg-orange-500/20 text-orange-400' : 'bg-gray-700/30 text-gray-400')}">
+                    ${j.aciertos_actuales === 0 ? '🥗 0' : j.aciertos_actuales}
                 </span>
             </td>
         `;

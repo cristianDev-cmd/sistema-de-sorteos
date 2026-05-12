@@ -50,13 +50,16 @@ export async function onRequestPost({ request, env }) {
                 "UPDATE jugadas SET aciertos_actuales = ? WHERE id = ?"
             ).bind(aciertos, jugada.id).run();
             
-            // Lógica de premios automatizada (opcional):
-            // Si aciertos == 8, dar 1 linea gratis
+            // Lógica de premios automatizada:
+            // Si aciertos >= 8, ganar una línea gratis para la próxima semana
             if (aciertos >= 8) {
-                // Verificar si ya le dimos la linea gratis? Para la simplificación, 
-                // el superadmin las gestionará si es necesario, o lo hacemos aquí:
-                // Requiere saber el jugador_id y no dar múltiples veces si se mantiene en 8.
-                // Lo dejaremos para que el admin lo vea en la grilla y asigne, o lo agregamos después.
+                // Obtenemos el jugador_id de la jugada
+                const jData = await env.DB.prepare("SELECT jugador_id FROM jugadas WHERE id = ?").bind(jugada.id).first();
+                if (jData) {
+                    await env.DB.prepare(
+                        "UPDATE jugadores SET lineas_gratis_disponibles = lineas_gratis_disponibles + 1 WHERE id = ?"
+                    ).bind(jData.jugador_id).run();
+                }
             }
         }
 
