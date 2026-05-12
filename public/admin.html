@@ -9,6 +9,44 @@
 </head>
 <body class="antialiased bg-gray-900 text-white min-h-screen">
 
+    <!-- Modal Editar Jugador -->
+    <div id="modal-jugador" class="hidden fixed inset-0 z-[60] overflow-y-auto bg-black/80 flex items-center justify-center p-4">
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <h2 class="text-xl font-bold mb-4">Editar Jugador</h2>
+            <form id="form-editar-jugador" class="space-y-4">
+                <input type="hidden" id="edit-j-id">
+                <div>
+                    <label class="block text-xs text-gray-400 uppercase font-bold mb-1">Nombre Completo</label>
+                    <input type="text" id="edit-j-nombre" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 uppercase font-bold mb-1">Teléfono</label>
+                    <input type="text" id="edit-j-telefono" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 uppercase font-bold mb-1">DNI/CUIL</label>
+                    <input type="text" id="edit-j-dni" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 uppercase font-bold mb-1">Alias</label>
+                    <input type="text" id="edit-j-alias" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 uppercase font-bold mb-1">Titular</label>
+                    <input type="text" id="edit-j-titular" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 uppercase font-bold mb-1">Líneas Gratis Disp.</label>
+                    <input type="number" id="edit-j-gratis" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2">
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="cerrarModalJugador()" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">Cancelar</button>
+                    <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-500 py-2 rounded-lg transition">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Login -->
     <div id="admin-login" class="flex items-center justify-center min-h-screen">
         <div class="glass p-8 rounded-2xl w-full max-w-sm shadow-2xl">
@@ -30,29 +68,30 @@
 
     <!-- Dashboard -->
     <div id="admin-dashboard" class="hidden min-h-screen flex flex-col">
-        <nav class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-16">
-                    <div class="flex items-center">
-                        <span class="text-xl font-bold text-indigo-400">AdminPanel</span>
-                        <div class="hidden md:block ml-10 flex items-baseline space-x-4">
-                            <button onclick="switchTab('jugadas')" class="nav-tab px-3 py-2 rounded-md text-sm font-medium bg-gray-900 text-white">Jugadas</button>
-                            <button onclick="switchTab('resultados')" class="nav-tab px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700">Resultados</button>
-                            <button onclick="switchTab('config')" class="nav-tab px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700">Configuración</button>
-                        </div>
-                    </div>
-                    <button id="btn-logout" class="text-sm text-red-400 hover:text-red-300">Cerrar Sesión</button>
+      <!-- Navbar -->
+    <nav class="bg-gray-900 border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-xl font-bold text-indigo-400">AdminPanel</span>
+                </div>
+                <button id="btn-logout" class="text-sm text-red-400 hover:text-red-300">Cerrar Sesión</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div>
+            <!-- Navigation Tabs -->
+            <div class="mb-8">
+                <div class="flex gap-2 overflow-x-auto pb-2 border-b border-gray-800">
+                    <button onclick="switchTab('jugadas')" class="tab-btn active px-4 py-2 rounded-lg font-medium transition whitespace-nowrap text-gray-400 hover:text-white">Jugadas</button>
+                    <button onclick="switchTab('jugadores')" class="tab-btn px-4 py-2 rounded-lg font-medium transition whitespace-nowrap text-gray-400 hover:text-white">Jugadores</button>
+                    <button onclick="switchTab('resultados')" class="tab-btn px-4 py-2 rounded-lg font-medium transition whitespace-nowrap text-gray-400 hover:text-white">Cargar Resultados</button>
+                    <button onclick="switchTab('sorteos')" class="tab-btn px-4 py-2 rounded-lg font-medium transition whitespace-nowrap text-gray-400 hover:text-white">Gestionar Sorteos</button>
+                    <button onclick="switchTab('config')" class="tab-btn px-4 py-2 rounded-lg font-medium transition whitespace-nowrap text-gray-400 hover:text-white">Configuración</button>
                 </div>
             </div>
-            <!-- Mobile Menu (simplified) -->
-            <div class="md:hidden border-t border-gray-700 flex overflow-x-auto">
-                <button onclick="switchTab('jugadas')" class="nav-tab flex-1 px-3 py-3 text-sm text-center bg-gray-900 border-r border-gray-700">Jugadas</button>
-                <button onclick="switchTab('resultados')" class="nav-tab flex-1 px-3 py-3 text-sm text-center text-gray-400 border-r border-gray-700">Resultados</button>
-                <button onclick="switchTab('config')" class="nav-tab flex-1 px-3 py-3 text-sm text-center text-gray-400">Config</button>
-            </div>
-        </nav>
-
-        <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
             
             <!-- Tab: Jugadas -->
             <div id="tab-jugadas" class="tab-content active">
@@ -68,19 +107,41 @@
                     <table class="min-w-full divide-y divide-gray-700 text-sm">
                         <thead class="bg-gray-900">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">ID</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Jugador</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Teléfono</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Aciertos</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Estado Pago</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Acciones</th>
+                                <th class="px-4 py-3 text-left font-bold text-gray-400 uppercase tracking-wider">ID</th>
+                            <th class="px-4 py-3 text-left font-bold text-gray-400 uppercase tracking-wider">Jugador</th>
+                            <th class="px-4 py-3 text-left font-bold text-gray-400 uppercase tracking-wider">Teléfono</th>
+                            <th class="px-4 py-3 text-left font-bold text-gray-400 uppercase tracking-wider">Aciertos</th>
+                            <th class="px-4 py-3 text-left font-bold text-gray-400 uppercase tracking-wider">Estado Pago</th>
+                            <th class="px-4 py-3 text-right font-bold text-gray-400 uppercase tracking-wider">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-jugadas" class="divide-y divide-gray-700">
+                        <!-- Inyectado por JS -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Tab: Jugadores -->
+            <div id="tab-jugadores" class="tab-content hidden">
+                <h2 class="text-2xl font-bold mb-4">Gestión de Jugadores</h2>
+                <div class="overflow-x-auto bg-gray-800 rounded-lg border border-gray-700">
+                    <table class="min-w-full divide-y divide-gray-700 text-sm">
+                        <thead class="bg-gray-900">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-bold text-gray-400 uppercase tracking-wider">ID</th>
+                                <th class="px-4 py-3 text-left font-bold text-gray-400 uppercase tracking-wider">Nombre</th>
+                                <th class="px-4 py-3 text-left font-bold text-gray-400 uppercase tracking-wider">Teléfono</th>
+                                <th class="px-4 py-3 text-left font-bold text-gray-400 uppercase tracking-wider">DNI/CUIL</th>
+                                <th class="px-4 py-3 text-left font-bold text-gray-400 uppercase tracking-wider">Gratis Disp.</th>
+                                <th class="px-4 py-3 text-right font-bold text-gray-400 uppercase tracking-wider">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="tbody-jugadas" class="divide-y divide-gray-700 bg-gray-800">
-                            <!-- JS Inject -->
+                        <tbody id="tbody-jugadores" class="divide-y divide-gray-700">
+                            <!-- Inyectado por JS -->
                         </tbody>
                     </table>
                 </div>
+            </div>
             </div>
 
             <!-- Tab: Resultados -->
