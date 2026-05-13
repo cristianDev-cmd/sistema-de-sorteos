@@ -75,6 +75,49 @@ export async function onRequestPut({ request, env }) {
             ).bind(pagada ? 1 : 0, id).run();
         }
 
+        await env.DB.prepare("INSERT INTO auditoria (tabla, accion, registro_id, detalles, admin_usuario) VALUES (?, ?, ?, ?, ?)").bind('jugadas', 'UPDATE', id, JSON.stringify(body), 'admin').run();
+
+        return new Response(JSON.stringify({ success: true }), { status: 200 });
+    } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+    }
+}
+
+export async function onRequestPost({ request, env }) {
+    try {
+        const auth = request.headers.get("Authorization");
+        if (!auth) return new Response("No autorizado", { status: 401 });
+
+        const body = await request.json();
+        const { jugador_id, sorteo_id, numeros_elegidos, pagada, es_mensual } = body;
+
+        const result = await env.DB.prepare(`
+            INSERT INTO jugadas (jugador_id, sorteo_id, numeros_elegidos, pagada, es_mensual)
+            VALUES (?, ?, ?, ?, ?)
+        `).bind(jugador_id, sorteo_id, numeros_elegidos, pagada ? 1 : 0, es_mensual ? 1 : 0).run();
+
+        const newId = result.meta.last_row_id;
+        await env.DB.prepare("INSERT INTO auditoria (tabla, accion, registro_id, detalles, admin_usuario) VALUES (?, ?, ?, ?, ?)").bind('jugadas', 'INSERT', newId, JSON.stringify(body), 'admin').run();
+
+        return new Response(JSON.stringify({ success: true, id: newId }), { status: 201 });
+    } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+    }
+}
+
+export async function onRequestDelete({ request, env }) {
+    try {
+        const auth = request.headers.get("Authorization");
+        if (!auth) return new Response("No autorizado", { status: 401 });
+
+        const url = new URL(request.url);
+        const id = url.searchParams.get("id");
+
+        if (!id) return new Response("ID requerido", { status: 400 });
+
+        await env.DB.prepare("DELETE FROM jugadas WHERE id = ?").bind(id).run();
+        await env.DB.prepare("INSERT INTO auditoria (tabla, accion, registro_id, detalles, admin_usuario) VALUES (?, ?, ?, ?, ?)").bind('jugadas', 'DELETE', id, JSON.stringify({id}), 'admin').run();
+
         return new Response(JSON.stringify({ success: true }), { status: 200 });
     } catch (e) {
         return new Response(JSON.stringify({ error: e.message }), { status: 500 });

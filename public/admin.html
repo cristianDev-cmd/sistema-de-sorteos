@@ -83,14 +83,14 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div>
             <!-- Navigation Tabs -->
-            <div class="mb-8">
-                <div class="flex gap-2 overflow-x-auto pb-2 border-b border-gray-800">
-                    <button onclick="switchTab(event, 'jugadas')" class="tab-btn active px-4 py-2 rounded-lg font-medium transition whitespace-nowrap text-gray-400 hover:text-white">Jugadas</button>
-                    <button onclick="switchTab(event, 'jugadores')" class="tab-btn px-4 py-2 rounded-lg font-medium transition whitespace-nowrap text-gray-400 hover:text-white">Jugadores</button>
-                    <button onclick="switchTab(event, 'resultados')" class="tab-btn px-4 py-2 rounded-lg font-medium transition whitespace-nowrap text-gray-400 hover:text-white">Cargar Resultados</button>
-                    <button onclick="switchTab(event, 'sorteos')" class="tab-btn px-4 py-2 rounded-lg font-medium transition whitespace-nowrap text-gray-400 hover:text-white">Gestionar Sorteos</button>
-                    <button onclick="switchTab(event, 'config')" class="tab-btn px-4 py-2 rounded-lg font-medium transition whitespace-nowrap text-gray-400 hover:text-white">Configuración</button>
-                </div>
+            <!-- Menú -->
+            <div class="flex flex-wrap gap-2 mb-6 border-b border-gray-700 pb-4">
+                <button onclick="switchTab('jugadas')" class="tab-btn bg-indigo-600 px-4 py-2 rounded font-bold transition">Jugadas</button>
+                <button onclick="switchTab('jugadores')" class="tab-btn bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded font-bold transition">Jugadores</button>
+                <button onclick="switchTab('resultados')" class="tab-btn bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded font-bold transition">Resultados</button>
+                <button onclick="switchTab('sorteos')" class="tab-btn bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded font-bold transition">Sorteos</button>
+                <button onclick="switchTab('auditoria')" class="tab-btn bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded font-bold transition">Auditoría</button>
+                <button onclick="switchTab('config')" class="tab-btn bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded font-bold transition">Configuración</button>
             </div>
             
             <!-- Tab: Jugadas -->
@@ -264,7 +264,53 @@
                 </div>
             </div>
 
+            <!-- Tab: Auditoría -->
+            <div id="tab-auditoria" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Registro de Auditoría</h2>
+                    <button onclick="cargarAuditoria()" class="bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded text-sm transition">Refrescar</button>
+                </div>
+                <div class="overflow-x-auto bg-gray-800 rounded-lg border border-gray-700 max-h-96">
+                    <table class="w-full text-left text-sm text-gray-300">
+                        <thead class="bg-gray-900 text-gray-400">
+                            <tr>
+                                <th class="px-4 py-3 font-bold uppercase">ID</th>
+                                <th class="px-4 py-3 font-bold uppercase">Fecha</th>
+                                <th class="px-4 py-3 font-bold uppercase">Tabla</th>
+                                <th class="px-4 py-3 font-bold uppercase">Acción</th>
+                                <th class="px-4 py-3 font-bold uppercase">Registro ID</th>
+                                <th class="px-4 py-3 font-bold uppercase">Admin</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-auditoria" class="divide-y divide-gray-700">
+                            <tr><td colspan="6" class="text-center py-4">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </main>
+
+    <!-- Modal System (APEX Style) -->
+    <div id="apex-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300" id="apex-modal-box">
+            <!-- Header -->
+            <div class="bg-gray-800 px-6 py-4 border-b border-gray-700 flex justify-between items-center">
+                <h3 id="apex-modal-title" class="text-lg font-bold text-white uppercase tracking-wider">Título</h3>
+                <button id="apex-modal-close" class="text-gray-400 hover:text-white transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <!-- Body -->
+            <div id="apex-modal-body" class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                <!-- Contenido inyectado dinámicamente -->
+            </div>
+            <!-- Footer -->
+            <div class="bg-gray-800 px-6 py-4 border-t border-gray-700 flex justify-end gap-3" id="apex-modal-footer">
+                <button id="apex-modal-cancel" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition">Cancelar</button>
+                <button id="apex-modal-confirm" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 font-bold text-white rounded transition">Aceptar</button>
+            </div>
+        </div>
     </div>
 
     <script src="/assets/js/admin.js"></script>

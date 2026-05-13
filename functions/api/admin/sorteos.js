@@ -51,16 +51,38 @@ export async function onRequestPost({ request, env }) {
                     ).bind(j.jugador_id, nuevo_sorteo_id, j.numeros_elegidos).run();
                 }
             }
-        } else if (action === "actualizar_pozos") {
+        } else if (action === "actualizar") {
+            const { estado } = body;
             await env.DB.prepare(
-                "UPDATE sorteos SET pozo_semana = ?, pozo_consuelo = ?, pozo_saladito = ? WHERE id = ?"
-            ).bind(pozo_semana, pozo_consuelo, pozo_saladito, id).run();
+                "UPDATE sorteos SET nombre_referencia = ?, pozo_semana = ?, pozo_consuelo = ?, pozo_saladito = ?, estado = ? WHERE id = ?"
+            ).bind(nombre_referencia, pozo_semana, pozo_consuelo, pozo_saladito, estado, id).run();
         } else if (action === "toggle_publico") {
             const { recibiendo_jugadas } = body;
             await env.DB.prepare(
                 "UPDATE sorteos SET recibiendo_jugadas = ? WHERE id = ?"
             ).bind(recibiendo_jugadas ? 1 : 0, id).run();
         }
+
+        await env.DB.prepare("INSERT INTO auditoria (tabla, accion, registro_id, detalles, admin_usuario) VALUES (?, ?, ?, ?, ?)").bind('sorteos', action === 'crear' ? 'INSERT' : 'UPDATE', id || body.nuevo_sorteo_id || null, JSON.stringify(body), 'admin').run();
+
+        return new Response(JSON.stringify({ success: true }), { status: 200 });
+    } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+    }
+}
+
+export async function onRequestDelete({ request, env }) {
+    try {
+        const auth = request.headers.get("Authorization");
+        if (!auth) return new Response("No autorizado", { status: 401 });
+
+        const url = new URL(request.url);
+        const id = url.searchParams.get("id");
+
+        if (!id) return new Response("ID requerido", { status: 400 });
+
+        await env.DB.prepare("DELETE FROM sorteos WHERE id = ?").bind(id).run();
+        await env.DB.prepare("INSERT INTO auditoria (tabla, accion, registro_id, detalles, admin_usuario) VALUES (?, ?, ?, ?, ?)").bind('sorteos', 'DELETE', id, JSON.stringify({id}), 'admin').run();
 
         return new Response(JSON.stringify({ success: true }), { status: 200 });
     } catch (e) {

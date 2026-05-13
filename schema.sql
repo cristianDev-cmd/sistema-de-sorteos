@@ -59,3 +59,14 @@ CREATE TABLE IF NOT EXISTS jugadas (
     FOREIGN KEY (jugador_id) REFERENCES jugadores(id),
     FOREIGN KEY (sorteo_id) REFERENCES sorteos(id)
 );
+
+-- Tabla de Auditoria
+CREATE TABLE IF NOT EXISTS auditoria (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tabla TEXT NOT NULL,
+    accion TEXT NOT NULL CHECK(accion IN ('INSERT', 'UPDATE', 'DELETE')),
+    registro_id INTEGER,
+    detalles TEXT,
+    fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+    admin_usuario TEXT DEFAULT 'Sistema'
+);

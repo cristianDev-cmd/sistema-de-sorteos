@@ -34,7 +34,7 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
             document.getElementById('login-error').classList.remove('hidden');
         }
     } catch (e) {
-        alert("Error de red");
+        Modal.alert("Error de red");
     } finally {
         btn.disabled = false;
     }
@@ -47,17 +47,88 @@ document.getElementById('btn-logout').addEventListener('click', () => {
     loginSection.classList.remove('hidden');
 });
 
+// Modal System
+const Modal = {
+    open: function(title, bodyHtml, actionsHtml) {
+        document.getElementById('apex-modal-title').textContent = title;
+        document.getElementById('apex-modal-body').innerHTML = bodyHtml;
+        document.getElementById('apex-modal-footer').innerHTML = actionsHtml;
+        
+        const modal = document.getElementById('apex-modal');
+        const box = document.getElementById('apex-modal-box');
+        
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            modal.classList.add('opacity-100');
+            box.classList.remove('scale-95');
+            box.classList.add('scale-100');
+        }, 10);
+    },
+    close: function() {
+        const modal = document.getElementById('apex-modal');
+        const box = document.getElementById('apex-modal-box');
+        
+        modal.classList.remove('opacity-100');
+        modal.classList.add('opacity-0');
+        box.classList.remove('scale-100');
+        box.classList.add('scale-95');
+        
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    },
+    alert: function(msg) {
+        this.open('Alerta', `<p class="text-white">${msg}</p>`, `<button onclick="Modal.close()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 font-bold text-white rounded transition">Aceptar</button>`);
+    },
+    confirm: function(msg, onConfirm) {
+        window._tempConfirm = () => { Modal.close(); onConfirm(); };
+        this.open('Confirmación', `<p class="text-white">${msg}</p>`, `
+            <button onclick="Modal.close()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition">Cancelar</button>
+            <button onclick="window._tempConfirm()" class="px-4 py-2 bg-orange-600 hover:bg-orange-500 font-bold text-white rounded transition">Aceptar</button>
+        `);
+    },
+    prompt: function(title, label, defaultValue, onSave) {
+        window._tempPrompt = () => {
+            const val = document.getElementById('modal-prompt-input').value;
+            Modal.close();
+            onSave(val);
+        };
+        this.open(title, `
+            <label class="block text-sm mb-1 text-gray-400">${label}</label>
+            <input type="text" id="modal-prompt-input" value="${defaultValue}" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white">
+        `, `
+            <button onclick="Modal.close()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition">Cancelar</button>
+            <button onclick="window._tempPrompt()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 font-bold text-white rounded transition">Guardar</button>
+        `);
+    }
+};
+
+document.getElementById('apex-modal-close')?.addEventListener('click', () => Modal.close());
+
 // TABS
-function switchTab(e, tabId) {
+function switchTab(tabId) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
     const targetTab = document.getElementById(`tab-${tabId}`);
     if (targetTab) targetTab.classList.remove('hidden');
     
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active', 'text-white'));
-    if (e && e.target) e.target.classList.add('active', 'text-white');
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-indigo-600');
+        btn.classList.add('bg-gray-800', 'hover:bg-gray-700');
+    });
+    
+    // Buscar el boton activo por el onclick attribute string match
+    const activeBtn = document.querySelector(`.tab-btn[onclick="switchTab('${tabId}')"]`);
+    if (activeBtn) {
+        activeBtn.classList.remove('bg-gray-800', 'hover:bg-gray-700');
+        activeBtn.classList.add('bg-indigo-600');
+    }
 
     if (tabId === 'jugadas') cargarJugadas(document.getElementById('filtro-semana').value);
     if (tabId === 'jugadores') cargarJugadores();
+    if (tabId === 'resultados') cargarResultadosAdmin();
+    if (tabId === 'sorteos') cargarSorteosABM();
+    if (tabId === 'auditoria') cargarAuditoria();
     if (tabId === 'config') cargarConfig();
 }
 
@@ -107,6 +178,7 @@ async function cargarSorteosLista() {
                                         ${isOpenToPublic ? 'Cerrar al Público' : 'Abrir al Público'}
                                     </button>` 
                                 : ''}
+                                <button onclick="borrarSorteo(${s.id})" class="text-xs bg-red-900 hover:bg-red-800 px-2 py-1 rounded text-red-200 transition">Eliminar</button>
                             </div>
                         </div>
                         ${isOpenToPublic && s.estado === 'Abierto' ? '<p class="text-[10px] text-green-400 font-bold uppercase">● Recibiendo Jugadas Nuevas</p>' : '<p class="text-[10px] text-orange-400 font-bold uppercase">● No recibe jugadas nuevas</p>'}
@@ -241,13 +313,15 @@ async function cargarJugadas(sorteoId = '') {
                 return `<span class="${isMatch ? 'text-green-400 font-bold' : 'text-gray-300'}">${num}</span>`;
             }).join(' - ');
 
-            detailTr.innerHTML = `
                 <td colspan="6" class="px-4 py-3">
                     <div class="flex justify-between items-center">
                         <div class="text-sm text-gray-300">
                             <span class="font-bold text-indigo-400">Números jugados:</span> <span class="tracking-widest">${numsHtml}</span>
                         </div>
-                        <button onclick="editarJugada(${j.id}, '${j.numeros_elegidos}')" class="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-gray-300 transition">Editar Línea</button>
+                        <div class="flex gap-2">
+                            <button onclick="editarJugada(${j.id}, '${j.numeros_elegidos}')" class="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-gray-300 transition">Editar Línea</button>
+                            <button onclick="borrarJugada(${j.id})" class="text-xs bg-red-900 hover:bg-red-800 px-2 py-1 rounded text-red-200 transition">Eliminar Línea</button>
+                        </div>
                     </div>
                 </td>
             `;
@@ -270,8 +344,21 @@ async function togglePago(id, pagada) {
         });
         cargarJugadas(document.getElementById('filtro-semana').value);
     } catch (e) {
-        alert("Error al actualizar pago");
+        Modal.alert("Error al actualizar pago");
     }
+}
+
+window.borrarJugada = function(id) {
+    Modal.confirm("¿Seguro que deseas eliminar esta jugada? Esta acción no se puede deshacer.", async () => {
+        try {
+            await fetch(`/api/admin/jugadas?id=${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            cargarJugadas(document.getElementById('filtro-semana').value);
+            Modal.alert("Jugada eliminada");
+        } catch(e) { Modal.alert("Error"); }
+    });
 }
 
 // Cargar Resultados
@@ -295,13 +382,14 @@ document.getElementById('form-resultados').addEventListener('submit', async (e) 
         });
         
         if (res.ok) {
-            alert("Resultados cargados y aciertos recalculados.");
+            Modal.alert("Resultados cargados y aciertos recalculados.");
             document.getElementById('numeros_ganadores').value = '';
+            cargarResultadosAdmin();
         } else {
-            alert("Error al cargar resultados.");
+            Modal.alert("Error al cargar resultados.");
         }
     } catch (e) {
-        alert("Error de conexión");
+        Modal.alert("Error de conexión");
     } finally {
         btn.disabled = false;
         btn.textContent = "Guardar y Recalcular Aciertos";
@@ -310,31 +398,28 @@ document.getElementById('form-resultados').addEventListener('submit', async (e) 
 
 // Sorteos
 document.getElementById('btn-cerrar-sorteo').addEventListener('click', async () => {
-    if(!confirm("¿Seguro que quieres cerrar el sorteo actual?")) return;
-    
-    try {
-        // En una app real, podrías querer listar el sorteo activo y enviar su ID.
-        // Aquí asumiremos que el backend cierra el último activo (o simplificamos enviando ID nulo si la query lo maneja, pero según la function requiere ID).
-        // Modificación: Necesitamos el ID del sorteo. Lo obtendremos antes o modificamos el backend para cerrar "el activo".
-        // Para simplicidad, busquemos los sorteos primero.
-        const resS = await fetch('/api/admin/sorteos', { headers: { 'Authorization': `Bearer ${token}` } });
-        const sorteos = await resS.json();
-        const activo = sorteos.find(s => s.estado === 'Abierto');
-        
-        if(activo) {
-            await fetch('/api/admin/sorteos', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ action: 'cerrar', id: activo.id })
-            });
-            alert("Sorteo cerrado.");
-        } else {
-            alert("No hay sorteo abierto.");
+    Modal.confirm("¿Seguro que quieres cerrar el sorteo actual?", async () => {
+        try {
+            const resS = await fetch('/api/admin/sorteos', { headers: { 'Authorization': `Bearer ${token}` } });
+            const sorteos = await resS.json();
+            const activo = sorteos.find(s => s.estado === 'Abierto');
+            
+            if(activo) {
+                await fetch('/api/admin/sorteos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ action: 'cerrar', id: activo.id })
+                });
+                Modal.alert("Sorteo cerrado.");
+                cargarSorteosLista();
+            } else {
+                Modal.alert("No hay sorteo abierto.");
+            }
+        } catch (e) {
+            console.error(e);
+            Modal.alert("Error");
         }
-    } catch (e) {
-        console.error(e);
-        alert("Error");
-    }
+    });
 });
 
 document.getElementById('form-nuevo-sorteo')?.addEventListener('submit', async (e) => {
@@ -356,7 +441,9 @@ document.getElementById('form-nuevo-sorteo')?.addEventListener('submit', async (
                 pozo_saladito: parseFloat(pozo_saladito) || 0
             })
         });
-        alert("Sorteo creado.");
+        Modal.alert("Sorteo creado.");
+        cargarSorteosLista();
+        document.getElementById('form-nuevo-sorteo').reset();
         document.getElementById('nuevo_sorteo_nombre').value = '';
         cargarSorteosLista();
     } catch (e) {
@@ -396,25 +483,26 @@ document.getElementById('form-config').addEventListener('submit', async (e) => {
                 admin_password: document.getElementById('conf-pass').value
             })
         });
-        alert("Configuración actualizada.");
+        Modal.alert("Configuración actualizada.");
     } catch (e) {
-        alert("Error");
+        Modal.alert("Error");
     }
 });
 
 async function editarJugada(id, actual) {
     event.stopPropagation();
-    const nuevos = prompt("Editar números (separados por coma):", actual);
-    if (nuevos && nuevos !== actual) {
-        try {
-            await fetch('/api/admin/jugadas', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ id, numeros_elegidos: nuevos })
-            });
-            cargarJugadas(document.getElementById('filtro-semana').value);
-        } catch (e) { alert("Error al editar línea"); }
-    }
+    Modal.prompt("Editar Jugada", "Editar números (separados por coma):", actual, async (nuevos) => {
+        if (nuevos && nuevos !== actual) {
+            try {
+                await fetch('/api/admin/jugadas', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ id, numeros_elegidos: nuevos })
+                });
+                cargarJugadas(document.getElementById('filtro-semana').value);
+            } catch (e) { Modal.alert("Error al editar línea"); }
+        }
+    });
 }
 
 // Jugadores
@@ -439,8 +527,9 @@ async function cargarJugadores() {
                     <td class="px-4 py-3 text-indigo-300">${p.telefono}</td>
                     <td class="px-4 py-3 text-gray-400">${p.dni_cuil || '-'}</td>
                     <td class="px-4 py-3 text-gray-300">${p.lineas_gratis_disponibles}</td>
-                    <td class="px-4 py-3 text-right">
+                    <td class="px-4 py-3 text-right space-x-2">
                         <button onclick="abrirModalJugador(${p.id})" class="text-indigo-400 hover:text-indigo-300">Editar</button>
+                        <button onclick="borrarJugador(${p.id})" class="text-red-400 hover:text-red-300">Eliminar</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -449,6 +538,19 @@ async function cargarJugadores() {
     } catch (e) {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-400">Error al cargar jugadores</td></tr>';
     }
+}
+
+window.borrarJugador = function(id) {
+    Modal.confirm("¿Estás seguro de eliminar este jugador? Perderá todas sus jugadas asociadas.", async () => {
+        try {
+            await fetch(`/api/admin/jugadores?id=${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            cargarJugadores();
+            Modal.alert("Jugador eliminado.");
+        } catch (e) { Modal.alert("Error"); }
+    });
 }
 
 function abrirModalJugador(id) {
@@ -498,74 +600,179 @@ document.getElementById('form-editar-jugador')?.addEventListener('submit', async
         if (res.ok) {
             cerrarModalJugador();
             cargarJugadores();
+            Modal.alert("Jugador guardado exitosamente");
         } else {
-            alert("Error al guardar cambios");
+            Modal.alert("Error al guardar cambios");
         }
     } catch (e) {
-        alert("Error de conexión");
+        Modal.alert("Error de conexión");
     } finally {
         btn.disabled = false;
     }
 });
 
 async function toggleMensual(id, valor) {
-    if(!confirm(`¿Marcar esta línea como Pago Mensual? (Se clonará automáticamente en los siguientes sorteos del mes)`)) return;
-    try {
-        await fetch('/api/admin/jugadas', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ id, es_mensual: valor })
-        });
-        cargarJugadas(document.getElementById('filtro-semana').value);
-    } catch (e) { alert("Error"); }
+    Modal.confirm(`¿Marcar esta línea como Pago Mensual? (Se clonará automáticamente en los siguientes sorteos del mes)`, async () => {
+        try {
+            await fetch('/api/admin/jugadas', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ id, es_mensual: valor })
+            });
+            cargarJugadas(document.getElementById('filtro-semana').value);
+        } catch (e) { Modal.alert("Error"); }
+    });
 }
 
 window.editarPozosSorteo = async function(id, s, c, sa) {
-    const sem = prompt("Pozo Semana:", s);
-    if(sem === null) return;
-    const con = prompt("Pozo Consuelo:", c);
-    if(con === null) return;
-    const sal = prompt("Pozo Saladito:", sa);
-    if(sal === null) return;
-
-    try {
-        await fetch('/api/admin/sorteos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ 
-                action: 'actualizar_pozos', 
-                id: id,
-                pozo_semana: parseFloat(sem) || 0,
-                pozo_consuelo: parseFloat(con) || 0,
-                pozo_saladito: parseFloat(sal) || 0
-            })
-        });
-        alert("Pozos actualizados.");
-        cargarSorteosLista();
-    } catch (e) {
-        alert("Error al actualizar");
-    }
+    // This should ideally be a form, for now just create a quick form in the Modal
+    const bodyHtml = `
+        <label class="block text-sm mb-1 text-gray-400">Pozo Semana</label>
+        <input type="number" id="mod-pozo-sem" value="${s}" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2">
+        <label class="block text-sm mb-1 text-gray-400">Pozo Consuelo</label>
+        <input type="number" id="mod-pozo-con" value="${c}" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2">
+        <label class="block text-sm mb-1 text-gray-400">Pozo Saladito</label>
+        <input type="number" id="mod-pozo-sal" value="${sa}" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white">
+    `;
+    window._tempSavePozos = async () => {
+        const sem = document.getElementById('mod-pozo-sem').value;
+        const con = document.getElementById('mod-pozo-con').value;
+        const sal = document.getElementById('mod-pozo-sal').value;
+        Modal.close();
+        
+        try {
+            await fetch('/api/admin/sorteos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ 
+                    action: 'actualizar_pozos', 
+                    id: id,
+                    pozo_semana: parseFloat(sem) || 0,
+                    pozo_consuelo: parseFloat(con) || 0,
+                    pozo_saladito: parseFloat(sal) || 0
+                })
+            });
+            Modal.alert("Pozos actualizados.");
+            cargarSorteosLista();
+        } catch (e) {
+            Modal.alert("Error al actualizar");
+        }
+    };
+    
+    Modal.open("Editar Pozos", bodyHtml, `
+        <button onclick="Modal.close()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition">Cancelar</button>
+        <button onclick="window._tempSavePozos()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 font-bold text-white rounded transition">Guardar</button>
+    `);
 }
 
 window.toggleSorteoPublico = async function(id, abrir) {
-    if(!confirm(`¿Seguro que quieres ${abrir ? 'ABRIR' : 'CERRAR'} el sorteo al público? ${!abrir ? '(Ya no podrán cargar nuevas jugadas)' : ''}`)) return;
-    try {
-        await fetch('/api/admin/sorteos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ 
-                action: 'toggle_publico', 
-                id: id,
-                recibiendo_jugadas: abrir
-            })
-        });
-        cargarSorteosLista();
-    } catch (e) {
-        alert("Error al actualizar estado");
-    }
+    Modal.confirm(`¿Seguro que quieres ${abrir ? 'ABRIR' : 'CERRAR'} el sorteo al público? ${!abrir ? '(Ya no podrán cargar nuevas jugadas)' : ''}`, async () => {
+        try {
+            await fetch('/api/admin/sorteos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ 
+                    action: 'toggle_publico', 
+                    id: id,
+                    recibiendo_jugadas: abrir
+                })
+            });
+            cargarSorteosLista();
+        } catch (e) {
+            Modal.alert("Error al actualizar estado");
+        }
+    });
 }
 
 function logout() {
     document.getElementById('btn-logout').click();
 }
 
+window.cargarSorteosABM = cargarSorteosLista;
+
+window.borrarSorteo = function(id) {
+    Modal.confirm("¿Seguro que deseas eliminar el sorteo? Se eliminarán todas las jugadas y resultados asociados.", async () => {
+        try {
+            await fetch(`/api/admin/sorteos?id=${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            cargarSorteosLista();
+            Modal.alert("Sorteo eliminado");
+        } catch(e) { Modal.alert("Error"); }
+    });
+}
+
+// AUDITORIA
+async function cargarAuditoria() {
+    const tbody = document.getElementById('tbody-auditoria');
+    if(!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-400">Cargando...</td></tr>';
+    try {
+        const res = await fetch('/api/admin/auditoria', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) {
+            const data = await res.json();
+            tbody.innerHTML = '';
+            data.forEach(a => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="px-4 py-2">#${a.id}</td>
+                        <td class="px-4 py-2">${new Date(a.fecha).toLocaleString()}</td>
+                        <td class="px-4 py-2 text-indigo-400 font-bold">${a.tabla}</td>
+                        <td class="px-4 py-2 font-mono ${a.accion === 'DELETE' ? 'text-red-400' : (a.accion === 'INSERT' ? 'text-green-400' : 'text-orange-400')}">${a.accion}</td>
+                        <td class="px-4 py-2">${a.registro_id}</td>
+                        <td class="px-4 py-2 text-gray-500">${a.admin_usuario}</td>
+                    </tr>
+                `;
+            });
+            if (data.length === 0) tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-400">Sin registros</td></tr>';
+        }
+    } catch (e) {}
+}
+
+// RESULTADOS ABM
+async function cargarResultadosAdmin() {
+    let listContainer = document.getElementById('lista-resultados-admin');
+    if (!listContainer) {
+        listContainer = document.createElement('div');
+        listContainer.id = 'lista-resultados-admin';
+        listContainer.className = 'mt-6 space-y-2';
+        document.getElementById('form-resultados').parentElement.appendChild(listContainer);
+    }
+    listContainer.innerHTML = '<p class="text-gray-400">Cargando resultados...</p>';
+    
+    try {
+        const res = await fetch('/api/admin/resultados', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) {
+            const data = await res.json();
+            listContainer.innerHTML = '<h3 class="font-bold text-gray-300 border-b border-gray-700 pb-2 mb-2 mt-6">Resultados Cargados</h3>';
+            data.forEach(r => {
+                listContainer.innerHTML += `
+                    <div class="bg-gray-800 p-3 rounded flex justify-between items-center border border-gray-700">
+                        <div>
+                            <p class="font-bold text-white">${r.dia_semana} (${r.fecha_dia})</p>
+                            <p class="text-sm text-gray-400">Sorteo: ${r.nombre_referencia} | Números: <span class="text-green-400 font-mono">${r.numeros_ganadores_dia}</span></p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="borrarResultado(${r.id})" class="text-xs bg-red-900 hover:bg-red-800 px-2 py-1 rounded text-red-200 transition">Eliminar</button>
+                        </div>
+                    </div>
+                `;
+            });
+            if (data.length === 0) listContainer.innerHTML += '<p class="text-gray-500 text-sm">No hay resultados cargados.</p>';
+        }
+    } catch (e) {}
+}
+
+window.borrarResultado = function(id) {
+    Modal.confirm("¿Seguro que deseas eliminar este resultado? Esto recalculará los aciertos de TODAS las jugadas de ese sorteo.", async () => {
+        try {
+            await fetch(`/api/admin/resultados?id=${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            cargarResultadosAdmin();
+            Modal.alert("Eliminado correctamente");
+        } catch(e) { Modal.alert("Error"); }
+    });
+}
