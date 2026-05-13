@@ -90,14 +90,26 @@ async function cargarSorteosLista() {
                 select.innerHTML += `<option value="${s.id}">${s.nombre_referencia} (${s.estado})</option>`;
                 
                 if (container) {
+                    const isOpenToPublic = s.recibiendo_jugadas !== 0; // default is usually 1, sqlite might return 1/0 or true/false
+                    
                     const div = document.createElement('div');
-                    div.className = "bg-gray-800 p-3 rounded-lg border border-gray-700 flex justify-between items-center";
+                    div.className = "bg-gray-800 p-3 rounded-lg border border-gray-700 flex flex-col gap-2";
                     div.innerHTML = `
-                        <div>
-                            <p class="font-bold text-sm text-white">${s.nombre_referencia} <span class="text-xs ${s.estado === 'Abierto' ? 'text-green-400' : 'text-gray-400'}">(${s.estado})</span></p>
-                            <p class="text-xs text-gray-400">Sem: $${s.pozo_semana || 0} | Con: $${s.pozo_consuelo || 0} | Sal: $${s.pozo_saladito || 0}</p>
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="font-bold text-sm text-white">${s.nombre_referencia} <span class="text-xs ${s.estado === 'Abierto' ? 'text-green-400' : 'text-gray-400'}">(${s.estado})</span></p>
+                                <p class="text-xs text-gray-400">Sem: $${s.pozo_semana || 0} | Con: $${s.pozo_consuelo || 0} | Sal: $${s.pozo_saladito || 0}</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2 justify-end">
+                                <button onclick="editarPozosSorteo(${s.id}, ${s.pozo_semana || 0}, ${s.pozo_consuelo || 0}, ${s.pozo_saladito || 0})" class="text-xs bg-indigo-600 hover:bg-indigo-500 px-2 py-1 rounded text-white transition">Editar Pozos</button>
+                                ${s.estado === 'Abierto' ? 
+                                    `<button onclick="toggleSorteoPublico(${s.id}, ${!isOpenToPublic})" class="text-xs ${isOpenToPublic ? 'bg-orange-600 hover:bg-orange-500' : 'bg-green-600 hover:bg-green-500'} px-2 py-1 rounded text-white transition">
+                                        ${isOpenToPublic ? 'Cerrar al Público' : 'Abrir al Público'}
+                                    </button>` 
+                                : ''}
+                            </div>
                         </div>
-                        <button onclick="editarPozosSorteo(${s.id}, ${s.pozo_semana || 0}, ${s.pozo_consuelo || 0}, ${s.pozo_saladito || 0})" class="text-xs bg-indigo-600 hover:bg-indigo-500 px-2 py-1 rounded text-white transition">Editar Pozos</button>
+                        ${isOpenToPublic && s.estado === 'Abierto' ? '<p class="text-[10px] text-green-400 font-bold uppercase">● Recibiendo Jugadas Nuevas</p>' : '<p class="text-[10px] text-orange-400 font-bold uppercase">● No recibe jugadas nuevas</p>'}
                     `;
                     container.appendChild(div);
                 }
@@ -532,6 +544,24 @@ window.editarPozosSorteo = async function(id, s, c, sa) {
         cargarSorteosLista();
     } catch (e) {
         alert("Error al actualizar");
+    }
+}
+
+window.toggleSorteoPublico = async function(id, abrir) {
+    if(!confirm(`¿Seguro que quieres ${abrir ? 'ABRIR' : 'CERRAR'} el sorteo al público? ${!abrir ? '(Ya no podrán cargar nuevas jugadas)' : ''}`)) return;
+    try {
+        await fetch('/api/admin/sorteos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ 
+                action: 'toggle_publico', 
+                id: id,
+                recibiendo_jugadas: abrir
+            })
+        });
+        cargarSorteosLista();
+    } catch (e) {
+        alert("Error al actualizar estado");
     }
 }
 

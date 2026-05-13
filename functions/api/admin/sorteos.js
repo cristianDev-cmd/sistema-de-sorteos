@@ -55,6 +55,11 @@ export async function onRequestPost({ request, env }) {
             await env.DB.prepare(
                 "UPDATE sorteos SET pozo_semana = ?, pozo_consuelo = ?, pozo_saladito = ? WHERE id = ?"
             ).bind(pozo_semana, pozo_consuelo, pozo_saladito, id).run();
+        } else if (action === "toggle_publico") {
+            const { recibiendo_jugadas } = body;
+            await env.DB.prepare(
+                "UPDATE sorteos SET recibiendo_jugadas = ? WHERE id = ?"
+            ).bind(recibiendo_jugadas ? 1 : 0, id).run();
         }
 
         return new Response(JSON.stringify({ success: true }), { status: 200 });

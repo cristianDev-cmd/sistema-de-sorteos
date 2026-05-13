@@ -1,7 +1,7 @@
 export async function onRequestGet({ request, env }) {
     try {
         const { results } = await env.DB.prepare(
-            "SELECT id, nombre_referencia, estado FROM sorteos WHERE estado = 'Abierto' ORDER BY id DESC LIMIT 1"
+            "SELECT id, nombre_referencia, estado FROM sorteos WHERE estado = 'Abierto' AND recibiendo_jugadas = 1 ORDER BY id DESC LIMIT 1"
         ).all();
 
         if (results && results.length > 0) {
