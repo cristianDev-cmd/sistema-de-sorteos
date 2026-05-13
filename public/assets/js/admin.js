@@ -70,22 +70,59 @@ function mostrarDashboard() {
 
 async function cargarSorteosLista() {
     try {
-        const res = await fetch('/api/admin/sorteos-lista', { headers: { 'Authorization': `Bearer ${token}` } });
+        const res = await fetch('/api/admin/sorteos', { headers: { 'Authorization': `Bearer ${token}` } });
         if (res.ok) {
             const sorteos = await res.json();
             const select = document.getElementById('filtro-semana');
             select.innerHTML = '<option value="">Todas las semanas</option>';
+            
+            let defaultId = '';
+            if (sorteos.length > 0) {
+                // El primero suele ser el último creado (o podemos buscar el activo)
+                const activo = sorteos.find(s => s.estado === 'Abierto');
+                defaultId = activo ? activo.id : sorteos[0].id;
+            }
+
+            const container = document.getElementById('lista-sorteos-admin');
+            if (container) container.innerHTML = '';
+
             sorteos.forEach(s => {
                 select.innerHTML += `<option value="${s.id}">${s.nombre_referencia} (${s.estado})</option>`;
+                
+                if (container) {
+                    const div = document.createElement('div');
+                    div.className = "bg-gray-800 p-3 rounded-lg border border-gray-700 flex justify-between items-center";
+                    div.innerHTML = `
+                        <div>
+                            <p class="font-bold text-sm text-white">${s.nombre_referencia} <span class="text-xs ${s.estado === 'Abierto' ? 'text-green-400' : 'text-gray-400'}">(${s.estado})</span></p>
+                            <p class="text-xs text-gray-400">Sem: $${s.pozo_semana || 0} | Con: $${s.pozo_consuelo || 0} | Sal: $${s.pozo_saladito || 0}</p>
+                        </div>
+                        <button onclick="editarPozosSorteo(${s.id}, ${s.pozo_semana || 0}, ${s.pozo_consuelo || 0}, ${s.pozo_saladito || 0})" class="text-xs bg-indigo-600 hover:bg-indigo-500 px-2 py-1 rounded text-white transition">Editar Pozos</button>
+                    `;
+                    container.appendChild(div);
+                }
             });
+
+            // Set default if empty
+            if (!select.value && defaultId) {
+                select.value = defaultId;
+            }
         }
     } catch (e) {
-        console.error("Error al cargar sorteos");
+        console.error("Error al cargar sorteos", e);
     }
 }
 
 document.getElementById('filtro-semana')?.addEventListener('change', (e) => {
     cargarJugadas(e.target.value);
+});
+
+document.getElementById('filtro-pago')?.addEventListener('change', () => {
+    cargarJugadas(document.getElementById('filtro-semana').value);
+});
+
+document.getElementById('filtro-orden')?.addEventListener('change', () => {
+    cargarJugadas(document.getElementById('filtro-semana').value);
 });
 
 // Cargar Jugadas
@@ -126,9 +163,29 @@ async function cargarJugadas(sorteoId = '') {
         if (res.status === 401) return logout();
         
         const data = await res.json();
+        
+        // Aplicar filtros locales
+        const filtroPago = document.getElementById('filtro-pago')?.value || 'todos';
+        const filtroOrden = document.getElementById('filtro-orden')?.value || 'id_desc';
+        
+        let filtradas = data;
+        if (filtroPago === 'pagados') {
+            filtradas = filtradas.filter(j => j.pagada);
+        } else if (filtroPago === 'pendientes') {
+            filtradas = filtradas.filter(j => !j.pagada);
+        }
+
+        if (filtroOrden === 'id_desc') {
+            filtradas.sort((a, b) => b.id - a.id);
+        } else if (filtroOrden === 'aciertos_desc') {
+            filtradas.sort((a, b) => b.aciertos_actuales - a.aciertos_actuales);
+        } else if (filtroOrden === 'aciertos_asc') {
+            filtradas.sort((a, b) => a.aciertos_actuales - b.aciertos_actuales);
+        }
+
         tbody.innerHTML = '';
         
-        data.forEach(j => {
+        filtradas.forEach(j => {
             const tr = document.createElement('tr');
             tr.className = "cursor-pointer hover:bg-gray-700 transition";
             tr.onclick = () => {
@@ -199,7 +256,7 @@ async function togglePago(id, pagada) {
             },
             body: JSON.stringify({ id, pagada })
         });
-        cargarJugadas();
+        cargarJugadas(document.getElementById('filtro-semana').value);
     } catch (e) {
         alert("Error al actualizar pago");
     }
@@ -449,6 +506,33 @@ async function toggleMensual(id, valor) {
         });
         cargarJugadas(document.getElementById('filtro-semana').value);
     } catch (e) { alert("Error"); }
+}
+
+window.editarPozosSorteo = async function(id, s, c, sa) {
+    const sem = prompt("Pozo Semana:", s);
+    if(sem === null) return;
+    const con = prompt("Pozo Consuelo:", c);
+    if(con === null) return;
+    const sal = prompt("Pozo Saladito:", sa);
+    if(sal === null) return;
+
+    try {
+        await fetch('/api/admin/sorteos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ 
+                action: 'actualizar_pozos', 
+                id: id,
+                pozo_semana: parseFloat(sem) || 0,
+                pozo_consuelo: parseFloat(con) || 0,
+                pozo_saladito: parseFloat(sal) || 0
+            })
+        });
+        alert("Pozos actualizados.");
+        cargarSorteosLista();
+    } catch (e) {
+        alert("Error al actualizar");
+    }
 }
 
 function logout() {

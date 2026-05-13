@@ -1,5 +1,6 @@
 let jugadasData = []; // Cache para filtrar por nombre localmente
 let currentSorteoId = '';
+let winningNumbers = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
     await cargarSemanas();
@@ -64,12 +65,15 @@ async function cargarReporte(sorteoId = '') {
                 sectionPozos.classList.add('hidden');
             }
 
-            // Render Resultados
             const gridRes = document.getElementById('grid-resultados');
             gridRes.innerHTML = '';
+            winningNumbers = [];
             if (data.resultados_diarios && data.resultados_diarios.length > 0) {
                 resSec.classList.remove('hidden');
                 data.resultados_diarios.forEach(r => {
+                    r.numeros_ganadores_dia.split(',').forEach(n => {
+                        if(n.trim()) winningNumbers.push(n.trim());
+                    });
                     const div = document.createElement('div');
                     div.className = "bg-gray-800/50 p-4 rounded-xl border border-gray-700/50";
                     div.innerHTML = `
@@ -108,11 +112,19 @@ function renderTabla(filtroNombre = '') {
     filtradas.forEach(j => {
         const tr = document.createElement('tr');
         tr.className = "hover:bg-indigo-500/5 transition";
+        
+        const nums = j.numeros_elegidos.split(',');
+        const numsHtml = nums.map(n => {
+            const num = n.trim();
+            const isMatch = winningNumbers.some(wn => String(wn).trim() === num);
+            return `<span class="${isMatch ? 'text-green-400 font-bold' : 'text-indigo-300'}">${num}</span>`;
+        }).join(' <span class="text-gray-600">-</span> ');
+
         tr.innerHTML = `
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">#${j.id}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-white">${j.nombre_completo}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-indigo-300 tracking-wider">
-                ${j.numeros_elegidos.split(',').join(' - ')}
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-mono tracking-wider">
+                ${numsHtml}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-center">
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${j.aciertos_actuales >= 8 ? 'bg-green-500/20 text-green-400' : (j.aciertos_actuales === 0 ? 'bg-orange-500/20 text-orange-400' : 'bg-gray-700/30 text-gray-400')}">

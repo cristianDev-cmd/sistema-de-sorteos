@@ -95,11 +95,21 @@
             
             <!-- Tab: Jugadas -->
             <div id="tab-jugadas" class="tab-content active">
-                <div class="flex justify-between items-center mb-4">
+                <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
                     <h2 class="text-2xl font-bold">Gestión de Jugadas</h2>
-                    <div>
+                    <div class="flex flex-wrap gap-2">
                         <select id="filtro-semana" class="bg-gray-800 text-white border border-gray-700 rounded px-3 py-2 text-sm">
                             <option value="">Cargando semanas...</option>
+                        </select>
+                        <select id="filtro-pago" class="bg-gray-800 text-white border border-gray-700 rounded px-3 py-2 text-sm">
+                            <option value="todos">Estado (Todos)</option>
+                            <option value="pagados">Pagados</option>
+                            <option value="pendientes">Pendientes</option>
+                        </select>
+                        <select id="filtro-orden" class="bg-gray-800 text-white border border-gray-700 rounded px-3 py-2 text-sm">
+                            <option value="id_desc">Orden (Más recientes)</option>
+                            <option value="aciertos_desc">Más Aciertos</option>
+                            <option value="aciertos_asc">Menos Aciertos</option>
                         </select>
                     </div>
                 </div>
@@ -202,6 +212,12 @@
                                 </div>
                                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 py-2 rounded-lg font-bold transition">Crear Nuevo Sorteo</button>
                             </form>
+                            
+                            <hr class="border-gray-700 my-6">
+                            <h3 class="text-lg font-bold mb-3 text-gray-300">Sorteos Existentes</h3>
+                            <div id="lista-sorteos-admin" class="space-y-3 max-h-64 overflow-y-auto pr-2">
+                                <!-- Inyectado por JS -->
+                            </div>
                         </div>
                     </div>
                 </div>
