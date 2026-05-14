@@ -25,33 +25,35 @@
             <p id="reporte-semana-nombre" class="text-indigo-400 text-lg font-bold">Cargando...</p>
         </div>
 
-        <!-- Pozos -->
-        <div id="section-pozos" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div class="glass p-4 rounded-xl border border-indigo-500/30 text-center">
-                <p class="text-xs text-gray-400 uppercase font-bold mb-1">Pozo Semana</p>
-                <p id="txt-pozo-semana" class="text-2xl font-bold text-indigo-400">$0</p>
-            </div>
-            <div class="glass p-4 rounded-xl border border-purple-500/30 text-center">
-                <p class="text-xs text-gray-400 uppercase font-bold mb-1">Pozo Consuelo</p>
-                <p id="txt-pozo-consuelo" class="text-2xl font-bold text-purple-400">$0</p>
-            </div>
-            <div id="card-saladito" class="glass p-4 rounded-xl border border-orange-500/30 text-center">
-                <p class="text-xs text-gray-400 uppercase font-bold mb-1">Saladito</p>
-                <p id="txt-pozo-saladito" class="text-2xl font-bold text-orange-400">$0</p>
+        <!-- Pozos Dinámicos -->
+        <div id="section-pozos" class="hidden mb-8">
+            <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                <span class="text-yellow-400">🏆</span> Premios de la Semana
+            </h3>
+            <div id="pozos-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <!-- Inyectado por JS -->
             </div>
         </div>
 
         <!-- Filtros -->
-        <div class="glass rounded-2xl p-6 mb-8 border border-gray-800 shadow-xl flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div class="glass rounded-2xl p-6 mb-8 border border-gray-800 shadow-xl flex flex-col md:flex-row gap-4 items-end justify-between">
             <div class="w-full md:w-auto">
                 <label class="block text-xs text-gray-400 uppercase font-bold mb-1 ml-1">Filtrar por Semana</label>
-                <select id="filtro-semana" class="w-full md:w-64 bg-gray-800 text-white border border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                <select id="filtro-semana" class="w-full md:w-56 bg-gray-800 text-white border border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none transition">
                     <option value="">Cargando semanas...</option>
                 </select>
             </div>
             <div class="w-full md:w-auto flex-1">
                 <label class="block text-xs text-gray-400 uppercase font-bold mb-1 ml-1">Buscar Jugador</label>
                 <input type="text" id="filtro-nombre" placeholder="Ingresa nombre..." class="w-full bg-gray-800 text-white border border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none transition">
+            </div>
+            <div class="w-full md:w-auto">
+                <label class="block text-xs text-gray-400 uppercase font-bold mb-1 ml-1">Ordenar por Aciertos</label>
+                <select id="filtro-aciertos" class="w-full bg-gray-800 text-white border border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                    <option value="">Sin orden</option>
+                    <option value="desc">Mayor a menor ↓</option>
+                    <option value="asc">Menor a mayor ↑</option>
+                </select>
             </div>
         </div>
 
@@ -66,7 +68,7 @@
         </div>
 
         <!-- Tabla de Jugadas -->
-        <div class="glass rounded-2xl overflow-hidden border border-gray-800 shadow-2xl">
+        <div class="glass rounded-2xl overflow-hidden border border-gray-800 shadow-2xl mb-10">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-800">
                     <thead class="bg-gray-800/50">
@@ -86,6 +88,16 @@
                 No hay jugadas pagadas registradas para esta semana.
             </div>
         </div>
+
+        <!-- FAQs -->
+        <section id="section-faqs" class="hidden mb-10">
+            <h3 class="text-2xl font-extrabold mb-6 flex items-center gap-2">
+                <span class="text-indigo-400">❓</span> Preguntas Frecuentes
+            </h3>
+            <div id="faqs-container" class="space-y-3">
+                <!-- Inyectado por JS -->
+            </div>
+        </section>
     </main>
 
     <footer class="max-w-4xl mx-auto px-4 py-8 text-center text-gray-600 text-sm">

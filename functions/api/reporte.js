@@ -8,7 +8,6 @@ export async function onRequestGet({ request, env }) {
             const { results } = await env.DB.prepare("SELECT id, nombre_referencia, pozo_semana, pozo_consuelo, pozo_saladito FROM sorteos WHERE id = ?").bind(sorteoId).all();
             if (results.length > 0) sorteoInfo = results[0];
         } else {
-            // Default to the latest active or last created
             const { results } = await env.DB.prepare("SELECT id, nombre_referencia, pozo_semana, pozo_consuelo, pozo_saladito FROM sorteos ORDER BY id DESC LIMIT 1").all();
             if (results.length > 0) sorteoInfo = results[0];
         }
@@ -24,6 +23,11 @@ export async function onRequestGet({ request, env }) {
             "SELECT dia_semana, numeros_ganadores_dia FROM sorteos_diarios WHERE sorteo_id = ? ORDER BY id ASC"
         ).bind(sorteoId).all();
 
+        // Fetch Pozos Dinámicos
+        const { results: pozos } = await env.DB.prepare(
+            "SELECT id, nombre, descripcion, monto_total, divisiones, monto_por_division FROM pozos WHERE sorteo_id = ? ORDER BY id ASC"
+        ).bind(sorteoId).all();
+
         // Fetch Jugadas Pagadas
         const { results: jugadas } = await env.DB.prepare(`
             SELECT j.id, ju.nombre_completo, j.numeros_elegidos, j.aciertos_actuales
@@ -36,6 +40,7 @@ export async function onRequestGet({ request, env }) {
         return new Response(JSON.stringify({
             sorteo: sorteoInfo,
             resultados_diarios,
+            pozos,
             jugadas
         }), { status: 200, headers: { "Content-Type": "application/json" } });
 

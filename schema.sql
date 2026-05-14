@@ -70,3 +70,25 @@ CREATE TABLE IF NOT EXISTS auditoria (
     fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
     admin_usuario TEXT DEFAULT 'Sistema'
 );
+
+-- Tabla de Pozos Dinámicos
+CREATE TABLE IF NOT EXISTS pozos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sorteo_id INTEGER NOT NULL,
+    nombre TEXT NOT NULL,
+    descripcion TEXT,
+    monto_total REAL NOT NULL,
+    divisiones INTEGER DEFAULT 1,
+    monto_por_division REAL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sorteo_id) REFERENCES sorteos(id) ON DELETE CASCADE
+);
+
+-- Tabla de FAQs
+CREATE TABLE IF NOT EXISTS faqs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pregunta TEXT NOT NULL,
+    respuesta TEXT NOT NULL,
+    orden INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

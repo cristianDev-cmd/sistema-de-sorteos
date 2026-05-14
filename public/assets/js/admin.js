@@ -128,6 +128,8 @@ function switchTab(tabId) {
     if (tabId === 'jugadores') cargarJugadores();
     if (tabId === 'resultados') cargarResultadosAdmin();
     if (tabId === 'sorteos') cargarSorteosABM();
+    if (tabId === 'pozos') cargarPozos();
+    if (tabId === 'faqs') cargarFaqsAdmin();
     if (tabId === 'auditoria') cargarAuditoria();
     if (tabId === 'config') cargarConfig();
 }
@@ -775,5 +777,109 @@ window.borrarResultado = function(id) {
             cargarResultadosAdmin();
             Modal.alert("Eliminado correctamente");
         } catch(e) { Modal.alert("Error"); }
+    });
+}
+
+// =====================
+// POZOS DINÁMICOS (ABM)
+// =====================
+async function cargarPozos() {
+    const container = document.getElementById('lista-pozos');
+    const select = document.getElementById('pozo-filtro-sorteo');
+    if (!container) return;
+    if (select && select.options.length <= 1) {
+        try {
+            const res = await fetch('/api/admin/sorteos', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) {
+                const sorteos = await res.json();
+                select.innerHTML = '<option value="">Todos los sorteos</option>';
+                sorteos.forEach(s => { select.innerHTML += `<option value="${s.id}">${s.nombre_referencia}</option>`; });
+            }
+        } catch(e) {}
+    }
+    const sorteoId = select?.value || '';
+    container.innerHTML = '<p class="text-gray-400 text-sm">Cargando pozos...</p>';
+    try {
+        let url = '/api/admin/pozos';
+        if (sorteoId) url += `?sorteo_id=${sorteoId}`;
+        const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) {
+            const pozos = await res.json();
+            container.innerHTML = '';
+            if (pozos.length === 0) { container.innerHTML = '<p class="text-gray-500 text-sm">No hay pozos. Crea uno con el botón de arriba.</p>'; return; }
+            pozos.forEach(p => {
+                container.innerHTML += `<div class="bg-gray-800 p-4 rounded-lg border border-gray-700 flex justify-between items-center gap-4"><div><p class="font-bold text-white">${p.nombre}</p>${p.descripcion ? `<p class="text-sm text-gray-400">${p.descripcion}</p>` : ''}<p class="text-sm text-indigo-300">$${parseFloat(p.monto_total).toLocaleString()} · ${p.divisiones > 1 ? `${p.divisiones} ganadores` : '1 ganador'}</p></div><div class="flex gap-2"><button onclick="abrirModalEditarPozo(${p.id})" class="text-xs bg-indigo-700 hover:bg-indigo-600 px-3 py-1 rounded text-white">Editar</button><button onclick="borrarPozo(${p.id})" class="text-xs bg-red-900 hover:bg-red-800 px-3 py-1 rounded text-red-200">Eliminar</button></div></div>`;
+            });
+            window._pozosCache = pozos;
+        }
+    } catch(e) { container.innerHTML = '<p class="text-red-400 text-sm">Error al cargar pozos.</p>'; }
+}
+window.abrirModalNuevoPozo = function() {
+    fetch('/api/admin/sorteos', { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()).then(sorteos => {
+        const optsHtml = sorteos.map(s => `<option value="${s.id}">${s.nombre_referencia}</option>`).join('');
+        window._tempSavePozo = async () => {
+            const d = { sorteo_id: document.getElementById('mod-pozo-sorteo').value, nombre: document.getElementById('mod-pozo-nombre').value, descripcion: document.getElementById('mod-pozo-desc').value, monto_total: document.getElementById('mod-pozo-monto').value, divisiones: document.getElementById('mod-pozo-divs').value };
+            Modal.close();
+            try { await fetch('/api/admin/pozos', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(d) }); Modal.alert('Pozo creado.'); cargarPozos(); } catch(e) { Modal.alert('Error.'); }
+        };
+        Modal.open('Nuevo Pozo', `<label class="block text-sm mb-1 text-gray-400">Sorteo</label><select id="mod-pozo-sorteo" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2">${optsHtml}</select><label class="block text-sm mb-1 text-gray-400">Nombre</label><input type="text" id="mod-pozo-nombre" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Descripción (opcional)</label><input type="text" id="mod-pozo-desc" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Monto ($)</label><input type="number" id="mod-pozo-monto" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Ganadores</label><input type="number" id="mod-pozo-divs" value="1" min="1" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white">`,
+        `<button onclick="Modal.close()" class="px-4 py-2 bg-gray-700 text-white rounded">Cancelar</button><button onclick="window._tempSavePozo()" class="px-4 py-2 bg-green-600 font-bold text-white rounded">Crear</button>`);
+    });
+}
+window.abrirModalEditarPozo = function(id) {
+    const p = (window._pozosCache||[]).find(x=>x.id===id); if(!p) return;
+    window._tempUpdatePozo = async () => {
+        const d = { id, nombre: document.getElementById('mod-ep-nombre').value, descripcion: document.getElementById('mod-ep-desc').value, monto_total: document.getElementById('mod-ep-monto').value, divisiones: document.getElementById('mod-ep-divs').value };
+        Modal.close();
+        try { await fetch('/api/admin/pozos', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(d) }); Modal.alert('Pozo actualizado.'); cargarPozos(); } catch(e) { Modal.alert('Error.'); }
+    };
+    Modal.open('Editar Pozo', `<label class="block text-sm mb-1 text-gray-400">Nombre</label><input type="text" id="mod-ep-nombre" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Descripción</label><input type="text" id="mod-ep-desc" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Monto ($)</label><input type="number" id="mod-ep-monto" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Ganadores</label><input type="number" id="mod-ep-divs" min="1" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white">`,
+    `<button onclick="Modal.close()" class="px-4 py-2 bg-gray-700 text-white rounded">Cancelar</button><button onclick="window._tempUpdatePozo()" class="px-4 py-2 bg-indigo-600 font-bold text-white rounded">Guardar</button>`);
+    setTimeout(()=>{ document.getElementById('mod-ep-nombre').value=p.nombre; document.getElementById('mod-ep-desc').value=p.descripcion||''; document.getElementById('mod-ep-monto').value=p.monto_total; document.getElementById('mod-ep-divs').value=p.divisiones; },50);
+}
+window.borrarPozo = function(id) { Modal.confirm('¿Eliminar este pozo?', async()=>{ try { await fetch(`/api/admin/pozos?id=${id}`,{method:'DELETE',headers:{'Authorization':`Bearer ${token}`}}); cargarPozos(); Modal.alert('Eliminado.'); } catch(e){Modal.alert('Error.');} }); }
+
+// =====================
+// FAQs ABM
+// =====================
+async function cargarFaqsAdmin() {
+    const container = document.getElementById('lista-faqs'); if(!container) return;
+    container.innerHTML = '<p class="text-gray-400 text-sm">Cargando FAQs...</p>';
+    try {
+        const res = await fetch('/api/admin/faqs', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) {
+            const faqs = await res.json(); window._faqsCache = faqs; container.innerHTML='';
+            if(faqs.length===0){container.innerHTML='<p class="text-gray-500 text-sm">No hay FAQs. Crea una con el botón de arriba.</p>';return;}
+            faqs.forEach(f => { container.innerHTML += `<div class="bg-gray-800 p-4 rounded-lg border border-gray-700"><div class="flex justify-between items-start gap-4"><div class="flex-1"><p class="font-bold text-white">${f.pregunta}</p><p class="text-sm text-gray-400 mt-1">${f.respuesta}</p></div><div class="flex gap-2 flex-shrink-0"><button onclick="abrirModalEditarFaq(${f.id})" class="text-xs bg-indigo-700 hover:bg-indigo-600 px-3 py-1 rounded text-white">Editar</button><button onclick="borrarFaq(${f.id})" class="text-xs bg-red-900 hover:bg-red-800 px-3 py-1 rounded text-red-200">Eliminar</button></div></div></div>`; });
+        }
+    } catch(e) { container.innerHTML = '<p class="text-red-400 text-sm">Error.</p>'; }
+}
+window.abrirModalNuevaFaq = function() {
+    window._tempSaveFaq = async () => { const d={pregunta:document.getElementById('mod-faq-preg').value,respuesta:document.getElementById('mod-faq-resp').value,orden:document.getElementById('mod-faq-orden').value}; Modal.close(); try{await fetch('/api/admin/faqs',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify(d)});Modal.alert('FAQ creada.');cargarFaqsAdmin();}catch(e){Modal.alert('Error.');} };
+    Modal.open('Nueva FAQ', `<label class="block text-sm mb-1 text-gray-400">Pregunta</label><input type="text" id="mod-faq-preg" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Respuesta</label><textarea id="mod-faq-resp" rows="3" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"></textarea><label class="block text-sm mb-1 text-gray-400">Orden</label><input type="number" id="mod-faq-orden" value="0" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white">`,
+    `<button onclick="Modal.close()" class="px-4 py-2 bg-gray-700 text-white rounded">Cancelar</button><button onclick="window._tempSaveFaq()" class="px-4 py-2 bg-green-600 font-bold text-white rounded">Crear</button>`);
+}
+window.abrirModalEditarFaq = function(id) {
+    const f=(window._faqsCache||[]).find(x=>x.id===id); if(!f) return;
+    window._tempUpdateFaq = async () => { const d={id,pregunta:document.getElementById('mod-efaq-preg').value,respuesta:document.getElementById('mod-efaq-resp').value,orden:document.getElementById('mod-efaq-orden').value}; Modal.close(); try{await fetch('/api/admin/faqs',{method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify(d)});Modal.alert('FAQ actualizada.');cargarFaqsAdmin();}catch(e){Modal.alert('Error.');} };
+    Modal.open('Editar FAQ', `<label class="block text-sm mb-1 text-gray-400">Pregunta</label><input type="text" id="mod-efaq-preg" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Respuesta</label><textarea id="mod-efaq-resp" rows="3" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"></textarea><label class="block text-sm mb-1 text-gray-400">Orden</label><input type="number" id="mod-efaq-orden" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white">`,
+    `<button onclick="Modal.close()" class="px-4 py-2 bg-gray-700 text-white rounded">Cancelar</button><button onclick="window._tempUpdateFaq()" class="px-4 py-2 bg-indigo-600 font-bold text-white rounded">Guardar</button>`);
+    setTimeout(()=>{ document.getElementById('mod-efaq-preg').value=f.pregunta; document.getElementById('mod-efaq-resp').value=f.respuesta; document.getElementById('mod-efaq-orden').value=f.orden||0; },50);
+}
+window.borrarFaq = function(id) { Modal.confirm('¿Eliminar esta FAQ?', async()=>{ try{await fetch(`/api/admin/faqs?id=${id}`,{method:'DELETE',headers:{'Authorization':`Bearer ${token}`}});cargarFaqsAdmin();Modal.alert('FAQ eliminada.');}catch(e){Modal.alert('Error.');} }); }
+
+// =====================
+// PURGA DE DATOS
+// =====================
+window.ejecutarPurga = function() {
+    const n = parseInt(document.getElementById('purga-mantener').value);
+    if (!n || n < 1) { Modal.alert('Ingresa un número válido.'); return; }
+    Modal.confirm(`⚠️ ¿Confirmas la PURGA? Se conservarán solo los últimos ${n} sorteo(s). Los sorteos anteriores y sus jugadas, resultados y pozos serán ELIMINADOS. Los jugadores NO son afectados.`, async () => {
+        try {
+            const res = await fetch('/api/admin/purga', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ mantener_ultimos: n }) });
+            const data = await res.json();
+            Modal.alert(data.message || 'Purga completada.');
+            cargarSorteosLista();
+        } catch(e) { Modal.alert('Error al ejecutar la purga.'); }
     });
 }
