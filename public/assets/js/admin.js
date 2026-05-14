@@ -735,20 +735,21 @@ async function cargarAuditoria() {
 
 // RESULTADOS ABM
 async function cargarResultadosAdmin() {
-    let listContainer = document.getElementById('lista-resultados-admin');
-    if (!listContainer) {
-        listContainer = document.createElement('div');
-        listContainer.id = 'lista-resultados-admin';
-        listContainer.className = 'mt-6 space-y-2';
-        document.getElementById('form-resultados').parentElement.appendChild(listContainer);
-    }
-    listContainer.innerHTML = '<p class="text-gray-400">Cargando resultados...</p>';
+    // Use the static container defined in tab-resultados
+    let listContainer = document.getElementById('resultados-cargados-admin');
+    if (!listContainer) return; // Tab not visible yet
+    
+    listContainer.innerHTML = '<p class="text-gray-400 text-sm">Cargando resultados...</p>';
     
     try {
         const res = await fetch('/api/admin/resultados', { headers: { 'Authorization': `Bearer ${token}` } });
         if (res.ok) {
             const data = await res.json();
-            listContainer.innerHTML = '<h3 class="font-bold text-gray-300 border-b border-gray-700 pb-2 mb-2 mt-6">Resultados Cargados</h3>';
+            if (data.length === 0) {
+                listContainer.innerHTML = '<p class="text-gray-500 text-sm">No hay resultados cargados aún.</p>';
+                return;
+            }
+            listContainer.innerHTML = '<h3 class="font-bold text-gray-300 border-b border-gray-700 pb-2 mb-3">Resultados Cargados</h3>';
             data.forEach(r => {
                 listContainer.innerHTML += `
                     <div class="bg-gray-800 p-3 rounded flex justify-between items-center border border-gray-700">
@@ -762,9 +763,8 @@ async function cargarResultadosAdmin() {
                     </div>
                 `;
             });
-            if (data.length === 0) listContainer.innerHTML += '<p class="text-gray-500 text-sm">No hay resultados cargados.</p>';
         }
-    } catch (e) {}
+    } catch (e) { listContainer.innerHTML = '<p class="text-red-400 text-sm">Error al cargar resultados.</p>'; }
 }
 
 window.borrarResultado = function(id) {
