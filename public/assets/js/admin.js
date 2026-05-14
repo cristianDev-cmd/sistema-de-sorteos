@@ -313,6 +313,7 @@ async function cargarJugadas(sorteoId = '') {
                 return `<span class="${isMatch ? 'text-green-400 font-bold' : 'text-gray-300'}">${num}</span>`;
             }).join(' - ');
 
+            detailTr.innerHTML = `
                 <td colspan="6" class="px-4 py-3">
                     <div class="flex justify-between items-center">
                         <div class="text-sm text-gray-300">
