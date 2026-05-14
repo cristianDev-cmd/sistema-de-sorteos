@@ -89,8 +89,7 @@
                 <button onclick="switchTab('jugadores')" class="tab-btn bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded font-bold transition">Jugadores</button>
                 <button onclick="switchTab('resultados')" class="tab-btn bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded font-bold transition">Resultados</button>
                 <button onclick="switchTab('sorteos')" class="tab-btn bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded font-bold transition">Sorteos</button>
-                <button onclick="switchTab('pozos')" class="tab-btn bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded font-bold transition">Pozos</button>
-                <button onclick="switchTab('faqs')" class="tab-btn bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded font-bold transition">FAQs</button>
+                <button onclick="switchTab('faqs')" class="tab-btn bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded font-bold transition">Preguntas Frecuentes</button>
                 <button onclick="switchTab('auditoria')" class="tab-btn bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded font-bold transition">Auditoría</button>
                 <button onclick="switchTab('config')" class="tab-btn bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded font-bold transition">Configuración</button>
             </div>
@@ -313,22 +312,6 @@
                 </div>
             </div>
 
-            <!-- Tab: Pozos Dinámicos -->
-            <div id="tab-pozos" class="tab-content hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold">Gestión de Pozos</h2>
-                    <button onclick="abrirModalNuevoPozo()" class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-bold text-sm transition">+ Nuevo Pozo</button>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm mb-1 text-gray-400">Filtrar por Sorteo</label>
-                    <select id="pozo-filtro-sorteo" onchange="cargarPozos()" class="bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white">
-                        <option value="">Todos los sorteos</option>
-                    </select>
-                </div>
-                <div id="lista-pozos" class="space-y-3">
-                    <p class="text-gray-400 text-sm">Cargando pozos...</p>
-                </div>
-            </div>
 
             <!-- Tab: FAQs -->
             <div id="tab-faqs" class="tab-content hidden">

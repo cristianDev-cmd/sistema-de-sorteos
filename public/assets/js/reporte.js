@@ -68,33 +68,41 @@ async function cargarReporte(sorteoId = '') {
                 sectionPozos.classList.remove('hidden');
                 pozosContainer.innerHTML = '';
                 data.pozos.forEach(p => {
-                    const div = document.createElement('div');
-                    div.className = 'bg-gray-800/60 border border-indigo-500/20 rounded-xl p-4 text-center';
-                    div.innerHTML = `
+                    const div = parseInt(p.divisiones) || 1;
+                    const montoTotal = parseFloat(p.monto_total) || 0;
+                    const montoPorGanador = div > 1 ? Math.floor(montoTotal / div) : montoTotal;
+                    const divHtml = div > 1
+                        ? `<p class="text-xs text-gray-400 mt-1">÷ ${div} ganadores = <span class="text-green-400 font-bold">$${montoPorGanador.toLocaleString()}</span> c/u</p>`
+                        : '';
+                    const el = document.createElement('div');
+                    el.className = 'bg-gray-800/60 border border-indigo-500/20 rounded-xl p-4 text-center';
+                    el.innerHTML = `
                         <p class="text-xs text-indigo-400 font-bold uppercase tracking-wider mb-1">${p.nombre}</p>
                         ${p.descripcion ? `<p class="text-xs text-gray-500 mb-2">${p.descripcion}</p>` : ''}
-                        <p class="text-2xl font-black text-white">$${parseFloat(p.monto_total).toLocaleString()}</p>
-                        ${p.divisiones > 1 ? `<p class="text-xs text-gray-400 mt-1">${p.divisiones} ganadores · $${parseFloat(p.monto_por_division).toLocaleString()} c/u</p>` : ''}
+                        <p class="text-2xl font-black text-white">$${montoTotal.toLocaleString()}</p>
+                        ${divHtml}
                     `;
-                    pozosContainer.appendChild(div);
+                    pozosContainer.appendChild(el);
                 });
             } else if (data.sorteo.pozo_semana || data.sorteo.pozo_consuelo || data.sorteo.pozo_saladito) {
-                // Fallback a pozos legacy fijos
+                // Fallback a pozos legacy fijos con divisiones
                 sectionPozos.classList.remove('hidden');
-                pozosContainer.innerHTML = `
-                    <div class="bg-gray-800/60 border border-indigo-500/20 rounded-xl p-4 text-center">
-                        <p class="text-xs text-indigo-400 font-bold uppercase mb-1">Pozo Semana</p>
-                        <p class="text-2xl font-black text-white">$${(data.sorteo.pozo_semana || 0).toLocaleString()}</p>
-                    </div>
-                    <div class="bg-gray-800/60 border border-yellow-500/20 rounded-xl p-4 text-center">
-                        <p class="text-xs text-yellow-400 font-bold uppercase mb-1">Pozo Consuelo</p>
-                        <p class="text-2xl font-black text-white">$${(data.sorteo.pozo_consuelo || 0).toLocaleString()}</p>
-                    </div>
-                    <div class="bg-gray-800/60 border border-green-500/20 rounded-xl p-4 text-center">
-                        <p class="text-xs text-green-400 font-bold uppercase mb-1">Saladito</p>
-                        <p class="text-2xl font-black text-white">$${(data.sorteo.pozo_saladito || 0).toLocaleString()}</p>
-                    </div>
-                `;
+                const legacyPozos = [
+                    { nombre: 'Pozo Semana', color: 'indigo', monto: data.sorteo.pozo_semana, div: data.sorteo.div_semana },
+                    { nombre: 'Pozo Consuelo', color: 'yellow', monto: data.sorteo.pozo_consuelo, div: data.sorteo.div_consuelo },
+                    { nombre: 'Saladito', color: 'orange', monto: data.sorteo.pozo_saladito, div: data.sorteo.div_saladito },
+                ].filter(p => p.monto > 0);
+                pozosContainer.innerHTML = legacyPozos.map(p => {
+                    const d = parseInt(p.div) || 1;
+                    const monto = parseFloat(p.monto) || 0;
+                    const porGanador = d > 1 ? `<p class="text-xs text-gray-400 mt-1">÷ ${d} ganadores = <span class="text-green-400 font-bold">$${Math.floor(monto/d).toLocaleString()}</span> c/u</p>` : '';
+                    return `<div class="bg-gray-800/60 border border-${p.color}-500/20 rounded-xl p-4 text-center">
+                        <p class="text-xs text-${p.color}-400 font-bold uppercase mb-1">${p.nombre}</p>
+                        <p class="text-2xl font-black text-white">$${monto.toLocaleString()}</p>
+                        ${porGanador}
+                    </div>`;
+                }).join('');
+
             } else {
                 sectionPozos.classList.add('hidden');
             }

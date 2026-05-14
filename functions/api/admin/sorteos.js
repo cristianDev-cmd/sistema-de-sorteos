@@ -19,7 +19,8 @@ export async function onRequestPost({ request, env }) {
         if (!auth) return new Response("No autorizado", { status: 401 });
 
         const body = await request.json();
-        const { action, id, nombre_referencia, pozo_semana, pozo_consuelo, pozo_saladito } = body;
+        const { action, id, nombre_referencia, pozo_semana, pozo_consuelo, pozo_saladito,
+                div_semana, div_consuelo, div_saladito } = body;
 
         if (action === "cerrar") {
             const fecha_fin = new Date().toISOString();
@@ -35,7 +36,6 @@ export async function onRequestPost({ request, env }) {
             const nuevo_sorteo_id = result.meta.last_row_id;
 
             // 2. Buscar jugadas mensuales del sorteo anterior y clonarlas
-            // Intentamos obtener el ID del sorteo anterior
             const anterior = await env.DB.prepare(
                 "SELECT id FROM sorteos WHERE id < ? ORDER BY id DESC LIMIT 1"
             ).bind(nuevo_sorteo_id).first();
@@ -56,6 +56,22 @@ export async function onRequestPost({ request, env }) {
             await env.DB.prepare(
                 "UPDATE sorteos SET nombre_referencia = ?, pozo_semana = ?, pozo_consuelo = ?, pozo_saladito = ?, estado = ? WHERE id = ?"
             ).bind(nombre_referencia, pozo_semana, pozo_consuelo, pozo_saladito, estado, id).run();
+        } else if (action === "actualizar_pozos") {
+            // Try to update with div columns, fall back if columns don't exist yet
+            try {
+                await env.DB.prepare(
+                    "UPDATE sorteos SET pozo_semana = ?, pozo_consuelo = ?, pozo_saladito = ?, div_semana = ?, div_consuelo = ?, div_saladito = ? WHERE id = ?"
+                ).bind(
+                    pozo_semana || 0, pozo_consuelo || 0, pozo_saladito || 0,
+                    div_semana || 1, div_consuelo || 1, div_saladito || 1,
+                    id
+                ).run();
+            } catch(e2) {
+                // Columns may not exist yet, try without them
+                await env.DB.prepare(
+                    "UPDATE sorteos SET pozo_semana = ?, pozo_consuelo = ?, pozo_saladito = ? WHERE id = ?"
+                ).bind(pozo_semana || 0, pozo_consuelo || 0, pozo_saladito || 0, id).run();
+            }
         } else if (action === "toggle_publico") {
             const { recibiendo_jugadas } = body;
             await env.DB.prepare(

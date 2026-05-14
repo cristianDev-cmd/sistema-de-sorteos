@@ -171,10 +171,18 @@ async function cargarSorteosLista() {
                         <div class="flex justify-between items-center">
                             <div>
                                 <p class="font-bold text-sm text-white">${s.nombre_referencia} <span class="text-xs ${s.estado === 'Abierto' ? 'text-green-400' : 'text-gray-400'}">(${s.estado})</span></p>
-                                <p class="text-xs text-gray-400">Sem: $${s.pozo_semana || 0} | Con: $${s.pozo_consuelo || 0} | Sal: $${s.pozo_saladito || 0}</p>
+                                <div class="flex flex-wrap gap-2 mt-1">
+                                    ${[['Sem', s.pozo_semana, s.div_semana], ['Con', s.pozo_consuelo, s.div_consuelo], ['Sal', s.pozo_saladito, s.div_saladito]]
+                                        .filter(([,m]) => m > 0)
+                                        .map(([k, m, d]) => {
+                                            const div = parseInt(d) || 1;
+                                            const porGanador = div > 1 ? ` / ${div} = $${Math.floor(m/div).toLocaleString()}` : '';
+                                            return `<span class="text-[11px] text-gray-300"><span class="text-gray-500">${k}:</span> $${parseFloat(m).toLocaleString()}${porGanador}</span>`;
+                                        }).join(' &nbsp;|&nbsp; ')}
+                                </div>
                             </div>
                             <div class="flex flex-wrap gap-2 justify-end">
-                                <button onclick="editarPozosSorteo(${s.id}, ${s.pozo_semana || 0}, ${s.pozo_consuelo || 0}, ${s.pozo_saladito || 0})" class="text-xs bg-indigo-600 hover:bg-indigo-500 px-2 py-1 rounded text-white transition">Editar Pozos</button>
+                                <button onclick="editarPozosSorteo(${s.id}, ${s.pozo_semana||0}, ${s.pozo_consuelo||0}, ${s.pozo_saladito||0}, ${s.div_semana||1}, ${s.div_consuelo||1}, ${s.div_saladito||1})" class="text-xs bg-indigo-600 hover:bg-indigo-500 px-2 py-1 rounded text-white transition">Editar Pozos</button>
                                 ${s.estado === 'Abierto' ? 
                                     `<button onclick="toggleSorteoPublico(${s.id}, ${!isOpenToPublic})" class="text-xs ${isOpenToPublic ? 'bg-orange-600 hover:bg-orange-500' : 'bg-green-600 hover:bg-green-500'} px-2 py-1 rounded text-white transition">
                                         ${isOpenToPublic ? 'Cerrar al Público' : 'Abrir al Público'}
@@ -627,22 +635,85 @@ async function toggleMensual(id, valor) {
     });
 }
 
-window.editarPozosSorteo = async function(id, s, c, sa) {
-    // This should ideally be a form, for now just create a quick form in the Modal
+window.editarPozosSorteo = async function(id, s, c, sa, ds, dc, dsa) {
+    ds = ds || 1; dc = dc || 1; dsa = dsa || 1;
+
+    function calcDiv(monto, div) {
+        if (!div || div <= 1) return '';
+        return `<span class="text-green-400 font-semibold ml-2">→ $${Math.floor(monto / div).toLocaleString()} c/u</span>`;
+    }
+
     const bodyHtml = `
-        <label class="block text-sm mb-1 text-gray-400">Pozo Semana</label>
-        <input type="number" id="mod-pozo-sem" value="${s}" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2">
-        <label class="block text-sm mb-1 text-gray-400">Pozo Consuelo</label>
-        <input type="number" id="mod-pozo-con" value="${c}" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2">
-        <label class="block text-sm mb-1 text-gray-400">Pozo Saladito</label>
-        <input type="number" id="mod-pozo-sal" value="${sa}" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white">
+        <p class="text-xs text-gray-500 mb-4">Ingresá el monto del pozo y en cuántos ganadores se divide. El monto por ganador se calcula automáticamente.</p>
+        
+        <div class="space-y-4">
+            <div class="bg-gray-900/50 rounded-lg p-3 border border-gray-700">
+                <p class="text-xs font-bold text-indigo-400 uppercase mb-2">Pozo Semana</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Monto ($)</label>
+                        <input type="number" id="mod-pozo-sem" value="${s}" oninput="recalcPozos()" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Se divide entre</label>
+                        <input type="number" id="mod-div-sem" value="${ds}" min="1" oninput="recalcPozos()" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white">
+                    </div>
+                </div>
+                <p id="calc-sem" class="text-xs text-gray-400 mt-1">Por ganador: <span class="text-green-400 font-bold">$${Math.floor(s/ds).toLocaleString()}</span></p>
+            </div>
+
+            <div class="bg-gray-900/50 rounded-lg p-3 border border-gray-700">
+                <p class="text-xs font-bold text-purple-400 uppercase mb-2">Pozo Consuelo</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Monto ($)</label>
+                        <input type="number" id="mod-pozo-con" value="${c}" oninput="recalcPozos()" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Se divide entre</label>
+                        <input type="number" id="mod-div-con" value="${dc}" min="1" oninput="recalcPozos()" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white">
+                    </div>
+                </div>
+                <p id="calc-con" class="text-xs text-gray-400 mt-1">Por ganador: <span class="text-green-400 font-bold">$${Math.floor(c/dc).toLocaleString()}</span></p>
+            </div>
+
+            <div class="bg-gray-900/50 rounded-lg p-3 border border-gray-700">
+                <p class="text-xs font-bold text-orange-400 uppercase mb-2">Pozo Saladito</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Monto ($)</label>
+                        <input type="number" id="mod-pozo-sal" value="${sa}" oninput="recalcPozos()" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Se divide entre</label>
+                        <input type="number" id="mod-div-sal" value="${dsa}" min="1" oninput="recalcPozos()" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white">
+                    </div>
+                </div>
+                <p id="calc-sal" class="text-xs text-gray-400 mt-1">Por ganador: <span class="text-green-400 font-bold">$${Math.floor(sa/dsa).toLocaleString()}</span></p>
+            </div>
+        </div>
     `;
+    
+    window.recalcPozos = function() {
+        const sem = parseFloat(document.getElementById('mod-pozo-sem').value) || 0;
+        const con = parseFloat(document.getElementById('mod-pozo-con').value) || 0;
+        const sal = parseFloat(document.getElementById('mod-pozo-sal').value) || 0;
+        const dSem = parseInt(document.getElementById('mod-div-sem').value) || 1;
+        const dCon = parseInt(document.getElementById('mod-div-con').value) || 1;
+        const dSal = parseInt(document.getElementById('mod-div-sal').value) || 1;
+        document.getElementById('calc-sem').innerHTML = `Por ganador: <span class="text-green-400 font-bold">$${Math.floor(sem/dSem).toLocaleString()}</span>`;
+        document.getElementById('calc-con').innerHTML = `Por ganador: <span class="text-green-400 font-bold">$${Math.floor(con/dCon).toLocaleString()}</span>`;
+        document.getElementById('calc-sal').innerHTML = `Por ganador: <span class="text-green-400 font-bold">$${Math.floor(sal/dSal).toLocaleString()}</span>`;
+    };
+
     window._tempSavePozos = async () => {
         const sem = document.getElementById('mod-pozo-sem').value;
         const con = document.getElementById('mod-pozo-con').value;
         const sal = document.getElementById('mod-pozo-sal').value;
+        const dSem = document.getElementById('mod-div-sem').value;
+        const dCon = document.getElementById('mod-div-con').value;
+        const dSal = document.getElementById('mod-div-sal').value;
         Modal.close();
-        
         try {
             await fetch('/api/admin/sorteos', {
                 method: 'POST',
@@ -652,17 +723,20 @@ window.editarPozosSorteo = async function(id, s, c, sa) {
                     id: id,
                     pozo_semana: parseFloat(sem) || 0,
                     pozo_consuelo: parseFloat(con) || 0,
-                    pozo_saladito: parseFloat(sal) || 0
+                    pozo_saladito: parseFloat(sal) || 0,
+                    div_semana: parseInt(dSem) || 1,
+                    div_consuelo: parseInt(dCon) || 1,
+                    div_saladito: parseInt(dSal) || 1
                 })
             });
-            Modal.alert("Pozos actualizados.");
+            Modal.alert('Pozos actualizados.');
             cargarSorteosLista();
         } catch (e) {
-            Modal.alert("Error al actualizar");
+            Modal.alert('Error al actualizar');
         }
     };
-    
-    Modal.open("Editar Pozos", bodyHtml, `
+
+    Modal.open('Editar Pozos del Sorteo', bodyHtml, `
         <button onclick="Modal.close()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition">Cancelar</button>
         <button onclick="window._tempSavePozos()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 font-bold text-white rounded transition">Guardar</button>
     `);
