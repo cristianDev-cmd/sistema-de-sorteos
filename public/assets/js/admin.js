@@ -4,6 +4,7 @@ const loginSection = document.getElementById('admin-login');
 const dashboardSection = document.getElementById('admin-dashboard');
 let _lastFiltradas = []; // Para el export PDF
 let _lastWinningNumbers = []; // Números ganadores para PDF
+let _lastResultadosDiarios = []; // Resultados por día para PDF
 
 document.addEventListener('DOMContentLoaded', () => {
     if (token) {
@@ -260,6 +261,14 @@ async function cargarJugadas(sorteoId = '') {
                 });
                 if (resRes.ok) winningNumbers = await resRes.json();
             } catch (e) { console.error(e); }
+
+            // Obtener resultados completos por día (para el PDF)
+            try {
+                const resFullRes = await fetch(`/api/admin/resultados?sorteo_id=${sIdForWinning}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (resFullRes.ok) _lastResultadosDiarios = await resFullRes.json();
+            } catch (e) { _lastResultadosDiarios = []; }
         }
 
         let url = '/api/admin/jugadas';
@@ -415,12 +424,43 @@ window.descargarPDFJugadas = function() {
 
     doc.text(`Pagadas: ${pagadas} | Pendientes: ${pendientes} | 0 aciertos: ${cnt0} | 8 aciertos: ${cnt8} | 9 aciertos: ${cnt9} | 10 aciertos: ${cnt10}`, 14, 46);
 
-    // Números ganadores en el header
-    if (_lastWinningNumbers.length > 0) {
+    // Números sorteados agrupados por día
+    let headerEndY = 46;
+    if (_lastResultadosDiarios && _lastResultadosDiarios.length > 0) {
+        headerEndY += 4;
         doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
         doc.setTextColor(22, 163, 74);
-        doc.text(`Números sorteados: ${_lastWinningNumbers.map(n => String(n).trim()).join(' - ')}`, 14, 52);
+        doc.text('Números sorteados:', 14, headerEndY);
+        headerEndY += 6;
+
+        doc.setFontSize(9);
+        // Ordenar por día de semana
+        const diasOrden = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+        const sortedRes = [..._lastResultadosDiarios].sort((a, b) => {
+            const iA = diasOrden.indexOf(a.dia_semana);
+            const iB = diasOrden.indexOf(b.dia_semana);
+            return (iA === -1 ? 99 : iA) - (iB === -1 ? 99 : iB);
+        });
+
+        sortedRes.forEach(r => {
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(60);
+            doc.text(`${r.dia_semana}:`, 18, headerEndY);
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(22, 163, 74);
+            const nums = r.numeros_ganadores_dia.split(',').map(n => n.trim()).join('  -  ');
+            doc.text(nums, 48, headerEndY);
+            headerEndY += 5;
+        });
+        headerEndY += 2;
+    } else if (_lastWinningNumbers.length > 0) {
+        headerEndY += 6;
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(22, 163, 74);
+        doc.text(`Números sorteados: ${_lastWinningNumbers.map(n => String(n).trim()).join(' - ')}`, 14, headerEndY);
+        headerEndY += 6;
     }
 
     // Tabla con números como cuadrículas
@@ -440,7 +480,7 @@ window.descargarPDFJugadas = function() {
     ]);
 
     doc.autoTable({
-        startY: _lastWinningNumbers.length > 0 ? 58 : 52,
+        startY: headerEndY + 2,
         head: [['ID', 'Jugador', 'Teléfono', 'Números Jugados', 'Aciertos', 'Estado']],
         body: rows,
         theme: 'grid',
