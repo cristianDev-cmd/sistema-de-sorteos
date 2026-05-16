@@ -6,6 +6,35 @@ let numerosSeleccionados = [];
 const PRECIO_LINEA = 500;
 let idsJugadas = [];
 
+// Copiar alias al portapapeles
+function copiarAlias() {
+    const alias = document.getElementById('config-alias')?.textContent?.trim();
+    if (!alias || alias === 'Cargando...') return;
+    navigator.clipboard.writeText(alias).then(() => {
+        const btn = document.getElementById('btn-copiar-alias');
+        btn.textContent = '✅ ¡Alias Copiado!';
+        btn.classList.replace('bg-indigo-600', 'bg-green-600');
+        btn.classList.replace('hover:bg-indigo-500', 'hover:bg-green-500');
+        setTimeout(() => {
+            btn.innerHTML = '📋 Copiar Alias';
+            btn.classList.replace('bg-green-600', 'bg-indigo-600');
+            btn.classList.replace('hover:bg-green-500', 'hover:bg-indigo-500');
+        }, 2500);
+    }).catch(() => {
+        // Fallback para navegadores sin clipboard API
+        const tmp = document.createElement('input');
+        tmp.value = alias;
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand('copy');
+        document.body.removeChild(tmp);
+        const btn = document.getElementById('btn-copiar-alias');
+        btn.textContent = '✅ ¡Alias Copiado!';
+        setTimeout(() => { btn.innerHTML = '📋 Copiar Alias'; }, 2500);
+    });
+}
+
+
 // DOM Elements
 const step1 = document.getElementById('step-1');
 const step2 = document.getElementById('step-2');
