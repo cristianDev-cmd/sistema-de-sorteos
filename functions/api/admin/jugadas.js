@@ -91,10 +91,27 @@ export async function onRequestPost({ request, env }) {
         const body = await request.json();
         const { jugador_id, sorteo_id, numeros_elegidos, pagada, es_mensual } = body;
 
+        // Calcular aciertos contra números ya sorteados
+        let aciertos = 0;
+        try {
+            const { results: resultados } = await env.DB.prepare(
+                "SELECT numeros_ganadores_dia FROM sorteos_diarios WHERE sorteo_id = ?"
+            ).bind(sorteo_id).all();
+            let todos_ganadores = new Set();
+            resultados.forEach(r => {
+                r.numeros_ganadores_dia.split(",").forEach(n => todos_ganadores.add(n.trim()));
+            });
+            if (todos_ganadores.size > 0) {
+                numeros_elegidos.split(",").forEach(n => {
+                    if (todos_ganadores.has(n.trim())) aciertos++;
+                });
+            }
+        } catch(e) { /* no results yet */ }
+
         const result = await env.DB.prepare(`
-            INSERT INTO jugadas (jugador_id, sorteo_id, numeros_elegidos, pagada, es_mensual)
-            VALUES (?, ?, ?, ?, ?)
-        `).bind(jugador_id, sorteo_id, numeros_elegidos, pagada ? 1 : 0, es_mensual ? 1 : 0).run();
+            INSERT INTO jugadas (jugador_id, sorteo_id, numeros_elegidos, pagada, es_mensual, aciertos_actuales)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `).bind(jugador_id, sorteo_id, numeros_elegidos, pagada ? 1 : 0, es_mensual ? 1 : 0, aciertos).run();
 
         const newId = result.meta.last_row_id;
         await env.DB.prepare("INSERT INTO auditoria (tabla, accion, registro_id, detalles, admin_usuario) VALUES (?, ?, ?, ?, ?)").bind('jugadas', 'INSERT', newId, JSON.stringify(body), 'admin').run();

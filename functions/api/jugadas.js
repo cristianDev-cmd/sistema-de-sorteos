@@ -31,17 +31,36 @@ export async function onRequestPost({ request, env }) {
         let lineas_gratis = jugadores.length > 0 ? jugadores[0].lineas_gratis_disponibles : 0;
         let ids_insertados = [];
 
-        // Insertar cada línea
+        // Obtener números ganadores ya sorteados para calcular aciertos inmediatamente
+        let todos_ganadores = new Set();
+        try {
+            const { results: resultados } = await env.DB.prepare(
+                "SELECT numeros_ganadores_dia FROM sorteos_diarios WHERE sorteo_id = ?"
+            ).bind(sorteo_id).all();
+            resultados.forEach(r => {
+                r.numeros_ganadores_dia.split(",").forEach(n => todos_ganadores.add(n.trim()));
+            });
+        } catch(e) { /* no results yet */ }
+
+        // Insertar cada línea con aciertos calculados
         for (const linea of lineas) {
             let usa_gratis = 0;
             if (lineas_gratis > 0) {
                 usa_gratis = 1;
                 lineas_gratis--;
             }
+
+            // Calcular aciertos contra números ya sorteados
+            let aciertos = 0;
+            if (todos_ganadores.size > 0) {
+                linea.split(",").forEach(n => {
+                    if (todos_ganadores.has(n.trim())) aciertos++;
+                });
+            }
             
             const insert = await env.DB.prepare(
-                "INSERT INTO jugadas (jugador_id, sorteo_id, numeros_elegidos, es_linea_gratis) VALUES (?, ?, ?, ?)"
-            ).bind(jugador_id, sorteo_id, linea, usa_gratis).run();
+                "INSERT INTO jugadas (jugador_id, sorteo_id, numeros_elegidos, es_linea_gratis, aciertos_actuales) VALUES (?, ?, ?, ?, ?)"
+            ).bind(jugador_id, sorteo_id, linea, usa_gratis, aciertos).run();
             
             ids_insertados.push(insert.meta.last_row_id);
         }
