@@ -2,6 +2,7 @@
 let token = localStorage.getItem('adminToken');
 const loginSection = document.getElementById('admin-login');
 const dashboardSection = document.getElementById('admin-dashboard');
+let _lastFiltradas = []; // Para el export PDF
 
 document.addEventListener('DOMContentLoaded', () => {
     if (token) {
@@ -305,6 +306,7 @@ async function cargarJugadas(sorteoId = '') {
         }
 
         tbody.innerHTML = '';
+        _lastFiltradas = filtradas; // Guardar para PDF
         
         filtradas.forEach(j => {
             const tr = document.createElement('tr');
@@ -369,6 +371,120 @@ async function cargarJugadas(sorteoId = '') {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-400">Error al cargar datos</td></tr>';
     }
 }
+
+// =====================
+// EXPORTAR PDF JUGADAS
+// =====================
+window.descargarPDFJugadas = function() {
+    if (!_lastFiltradas || _lastFiltradas.length === 0) {
+        Modal.alert("No hay jugadas para exportar. Cargá un sorteo primero.");
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'landscape' });
+
+    // Obtener nombre del sorteo seleccionado
+    const selectSemana = document.getElementById('filtro-semana');
+    const nombreSorteo = selectSemana?.options[selectSemana.selectedIndex]?.text || 'Todos los sorteos';
+    const fecha = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+    // Header
+    doc.setFontSize(22);
+    doc.setFont(undefined, 'bold');
+    doc.text('La Polla - Reporte de Jugadas', 14, 20);
+
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(100);
+    doc.text(`Sorteo: ${nombreSorteo}`, 14, 28);
+    doc.text(`Generado: ${fecha}`, 14, 34);
+    doc.text(`Total de líneas: ${_lastFiltradas.length}`, 14, 40);
+
+    // Contadores rápidos
+    const cnt0 = _lastFiltradas.filter(j => j.aciertos_actuales === 0).length;
+    const cnt8 = _lastFiltradas.filter(j => j.aciertos_actuales === 8).length;
+    const cnt9 = _lastFiltradas.filter(j => j.aciertos_actuales === 9).length;
+    const cnt10 = _lastFiltradas.filter(j => j.aciertos_actuales === 10).length;
+    const pagadas = _lastFiltradas.filter(j => j.pagada).length;
+    const pendientes = _lastFiltradas.length - pagadas;
+
+    doc.text(`Pagadas: ${pagadas} | Pendientes: ${pendientes} | 0 aciertos: ${cnt0} | 8 aciertos: ${cnt8} | 9 aciertos: ${cnt9} | 10 aciertos: ${cnt10}`, 14, 46);
+
+    // Tabla
+    const rows = _lastFiltradas.map(j => [
+        j.id,
+        j.nombre_completo,
+        j.telefono,
+        j.numeros_elegidos,
+        `${j.aciertos_actuales} / 10`,
+        j.pagada ? 'PAGADA' : 'PENDIENTE'
+    ]);
+
+    doc.autoTable({
+        startY: 52,
+        head: [['ID', 'Jugador', 'Teléfono', 'Números Jugados', 'Aciertos', 'Estado Pago']],
+        body: rows,
+        theme: 'grid',
+        headStyles: {
+            fillColor: [79, 70, 229], // indigo-600
+            textColor: 255,
+            fontStyle: 'bold',
+            fontSize: 10
+        },
+        styles: {
+            fontSize: 9,
+            cellPadding: 3,
+            valign: 'middle'
+        },
+        columnStyles: {
+            0: { cellWidth: 15, halign: 'center' },
+            1: { cellWidth: 45 },
+            2: { cellWidth: 35 },
+            3: { cellWidth: 'auto', fontStyle: 'bold', fontSize: 8 },
+            4: { cellWidth: 25, halign: 'center', fontStyle: 'bold' },
+            5: { cellWidth: 28, halign: 'center' }
+        },
+        bodyStyles: {
+            lineColor: [200, 200, 200],
+            lineWidth: 0.2
+        },
+        alternateRowStyles: {
+            fillColor: [245, 245, 250]
+        },
+        // Colorear estado de pago
+        didParseCell: function(data) {
+            if (data.section === 'body' && data.column.index === 5) {
+                if (data.cell.raw === 'PAGADA') {
+                    data.cell.styles.textColor = [22, 163, 74];
+                    data.cell.styles.fontStyle = 'bold';
+                } else {
+                    data.cell.styles.textColor = [220, 38, 38];
+                    data.cell.styles.fontStyle = 'bold';
+                }
+            }
+            // Resaltar aciertos altos
+            if (data.section === 'body' && data.column.index === 4) {
+                const val = parseInt(data.cell.raw);
+                if (val >= 8) {
+                    data.cell.styles.textColor = [22, 163, 74];
+                    data.cell.styles.fontStyle = 'bold';
+                } else if (val === 0) {
+                    data.cell.styles.textColor = [234, 88, 12];
+                }
+            }
+        },
+        // Footer
+        didDrawPage: function(data) {
+            doc.setFontSize(8);
+            doc.setTextColor(150);
+            doc.text('La Polla - Sistema de Sorteos', 14, doc.internal.pageSize.height - 10);
+            doc.text(`Página ${doc.internal.getNumberOfPages()}`, doc.internal.pageSize.width - 30, doc.internal.pageSize.height - 10);
+        }
+    });
+
+    doc.save(`jugadas_${nombreSorteo.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`);
+};
 
 async function togglePago(id, pagada) {
     try {
