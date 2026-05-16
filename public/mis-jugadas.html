@@ -6,47 +6,101 @@
     <title>Mis Jugadas - La Polla</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        body { font-size: 18px; }
+        .num-ball {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            font-size: 1.25rem;
+            font-weight: 900;
+            border: 2px solid #374151;
+            background: #1e293b;
+            color: #9ca3af;
+            transition: all .2s;
+        }
+        .num-ball.ganador {
+            background: #16a34a;
+            color: #fff;
+            border-color: #4ade80;
+            box-shadow: 0 0 12px rgba(74, 222, 128, 0.5);
+        }
+    </style>
 </head>
+
 <body class="antialiased">
 
-    <!-- Navbar -->
+    <!-- Navbar grande y clara -->
     <nav class="glass sticky top-0 z-50 border-b border-gray-800">
-        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
-            <a href="/" class="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
-                &larr; Volver
+        <div class="max-w-3xl mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="/" class="flex items-center gap-2 text-indigo-400 font-extrabold text-xl hover:text-white transition">
+                ← Volver
             </a>
-            <h1 class="text-xl font-bold text-white">Consulta Rápida</h1>
+            <h1 class="text-2xl font-extrabold text-white">Mis Jugadas</h1>
         </div>
     </nav>
 
-    <main class="max-w-2xl mx-auto px-4 py-8">
-        
-        <div id="login-section" class="glass rounded-2xl p-6 shadow-2xl">
-            <h2 class="text-2xl font-bold mb-4 text-center">Revisa tus Aciertos</h2>
-            <form id="form-consulta" class="space-y-4">
+    <main class="max-w-2xl mx-auto px-4 py-10">
+
+        <!-- Formulario de búsqueda -->
+        <div id="login-section" class="glass rounded-3xl p-8 shadow-2xl border border-gray-700">
+            <div class="text-center mb-8">
+                <div class="text-6xl mb-4">🔍</div>
+                <h2 class="text-4xl font-black text-white mb-3">Revisá tus Aciertos</h2>
+                <p class="text-gray-400 text-xl leading-relaxed">Ingresá tu número de teléfono para ver cuántos números acertaste esta semana</p>
+            </div>
+
+            <form id="form-consulta" class="space-y-6">
                 <div>
-                    <label class="block text-sm font-medium mb-1 text-gray-300">Número de Teléfono</label>
-                    <input type="tel" id="telefono" required placeholder="Ej: 5491123456789" class="w-full px-4 py-3 rounded-xl">
+                    <label class="block text-xl font-bold mb-3 text-gray-200">
+                        📱 Número de Teléfono
+                    </label>
+                    <input type="tel" id="telefono" required
+                        placeholder="Ej: 2613123456"
+                        class="w-full px-5 py-5 text-2xl rounded-2xl bg-gray-800 border-2 border-gray-600 text-white placeholder-gray-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 outline-none transition">
                 </div>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl shadow-lg transition transform hover:-translate-y-1">
-                    Buscar Jugadas 🔍
+                <button type="submit"
+                    class="w-full bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-black py-5 text-2xl rounded-2xl shadow-lg transition transform hover:-translate-y-1">
+                    Ver Mis Jugadas 🎰
                 </button>
             </form>
-            <div id="error-msg" class="text-red-400 text-center mt-4 hidden"></div>
+
+            <div id="error-msg" class="text-red-400 text-center mt-6 text-xl font-bold hidden"></div>
         </div>
 
-        <div id="resultados-section" class="hidden mt-8">
-            <div class="flex justify-between items-center mb-6 bg-slate-800 p-4 rounded-xl border border-slate-700">
-                <div>
-                    <h3 class="text-lg font-bold text-indigo-300" id="res-nombre">Nombre</h3>
-                    <p class="text-sm text-gray-400">Líneas gratis disp: <span id="res-gratis" class="font-bold text-white">0</span></p>
+        <!-- Resultados -->
+        <div id="resultados-section" class="hidden mt-8 space-y-6">
+
+            <!-- Datos del jugador -->
+            <div class="glass rounded-2xl p-6 border border-indigo-500/30 bg-indigo-500/5">
+                <div class="flex justify-between items-center flex-wrap gap-4">
+                    <div>
+                        <p class="text-gray-400 text-base font-bold uppercase mb-1">Jugador</p>
+                        <h3 class="text-3xl font-black text-indigo-300" id="res-nombre">—</h3>
+                    </div>
+                    <div class="text-center bg-gray-800/60 rounded-xl px-5 py-3">
+                        <p class="text-gray-400 text-sm uppercase font-bold mb-1">Líneas Gratis</p>
+                        <p class="text-4xl font-black text-green-400" id="res-gratis">0</p>
+                    </div>
                 </div>
             </div>
 
-            <h3 class="text-xl font-bold mb-4 border-b border-gray-700 pb-2">Tus Líneas Activas (Sorteo Actual)</h3>
-            <div id="lista-jugadas" class="space-y-4">
+            <h3 class="text-2xl font-extrabold text-white border-b border-gray-700 pb-3">
+                📋 Tus Líneas del Sorteo Actual
+            </h3>
+
+            <div id="lista-jugadas" class="space-y-6">
                 <!-- JS Inject -->
             </div>
+
+            <!-- Botón para nueva búsqueda -->
+            <button onclick="location.reload()"
+                class="w-full mt-4 bg-gray-700 hover:bg-gray-600 text-white font-bold py-4 text-xl rounded-2xl transition">
+                ← Buscar otro número
+            </button>
         </div>
 
     </main>
@@ -56,14 +110,14 @@
         const loginSection = document.getElementById('login-section');
         const resultadosSection = document.getElementById('resultados-section');
         const errorMsg = document.getElementById('error-msg');
-        
+
         formConsulta.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = formConsulta.querySelector('button');
             const telefono = document.getElementById('telefono').value;
-            
+
             btn.disabled = true;
-            btn.textContent = 'Buscando...';
+            btn.textContent = '⏳ Buscando...';
             errorMsg.classList.add('hidden');
 
             try {
@@ -75,15 +129,15 @@
                     resultadosSection.classList.remove('hidden');
                 } else {
                     const err = await res.json();
-                    errorMsg.textContent = err.error || 'No se encontró el jugador';
+                    errorMsg.textContent = err.error || '❌ No se encontró ningún jugador con ese teléfono';
                     errorMsg.classList.remove('hidden');
                 }
             } catch (e) {
-                errorMsg.textContent = 'Error de red';
+                errorMsg.textContent = '❌ Error de red. Intentá de nuevo.';
                 errorMsg.classList.remove('hidden');
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Buscar Jugadas 🔍';
+                btn.textContent = 'Ver Mis Jugadas 🎰';
             }
         });
 
@@ -95,56 +149,69 @@
             lista.innerHTML = '';
 
             if (data.jugadas.length === 0) {
-                lista.innerHTML = '<p class="text-gray-400 text-center py-4">No tienes líneas en el sorteo actual.</p>';
+                lista.innerHTML = `
+                    <div class="glass rounded-2xl p-8 text-center border border-gray-700">
+                        <div class="text-5xl mb-4">😔</div>
+                        <p class="text-2xl text-gray-400">No tenés líneas en el sorteo actual.</p>
+                    </div>`;
                 return;
             }
 
-            const numerosGanadores = new Set(data.numeros_salidos || []);
+            const numerosGanadores = new Set((data.numeros_salidos || []).map(n => String(n).trim()));
 
-            data.jugadas.forEach((j, index) => {
-                const elegidos = j.numeros_elegidos.split(',');
-                
+            data.jugadas.forEach((j) => {
+                const elegidos = j.numeros_elegidos.split(',').map(n => n.trim());
+                const aciertos = j.aciertos_actuales;
+
+                let aciertosColor = 'text-gray-300';
+                let aciertosEmoji = '';
+                if (aciertos === 10)       { aciertosColor = 'text-yellow-400'; aciertosEmoji = '🏆'; }
+                else if (aciertos === 9)   { aciertosColor = 'text-purple-400'; aciertosEmoji = '🔥'; }
+                else if (aciertos >= 8)    { aciertosColor = 'text-blue-400';   aciertosEmoji = '✨'; }
+                else if (aciertos === 0)   { aciertosColor = 'text-orange-400'; aciertosEmoji = '🥗'; }
+
+                const borderColor = j.pagada ? 'border-green-500/40' : 'border-red-500/40';
                 const card = document.createElement('div');
-                card.className = 'glass rounded-xl p-4 border ' + (j.pagada ? 'border-green-500/30' : 'border-red-500/30');
-                
-                const header = document.createElement('div');
-                header.className = 'flex justify-between items-center mb-3 pb-2 border-b border-gray-700/50';
-                header.innerHTML = `
-                    <span class="font-bold text-gray-200">Línea #${j.id}</span>
-                    <div class="flex gap-2">
-                        ${j.es_linea_gratis ? '<span class="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-1 rounded">Gratis</span>' : ''}
-                        <span class="text-xs ${j.pagada ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'} px-2 py-1 rounded">
-                            ${j.pagada ? 'PAGADA' : 'PENDIENTE PAGO'}
-                        </span>
+                card.className = `glass rounded-3xl p-6 border-2 ${borderColor} shadow-xl`;
+
+                // Header
+                const estadoHtml = j.pagada
+                    ? `<span class="px-4 py-2 rounded-full bg-green-500/20 text-green-400 text-base font-bold border border-green-500/40">✅ PAGADA</span>`
+                    : `<span class="px-4 py-2 rounded-full bg-red-500/20 text-red-400 text-base font-bold border border-red-500/40">⏳ PENDIENTE DE PAGO</span>`;
+
+                const gratisHtml = j.es_linea_gratis
+                    ? `<span class="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-sm font-bold">🎁 Gratis</span>`
+                    : '';
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start flex-wrap gap-3 mb-5 pb-4 border-b border-gray-700/60">
+                        <div class="flex flex-col gap-2">
+                            <span class="text-gray-400 text-base font-bold uppercase">Línea #${j.id}</span>
+                            ${gratisHtml}
+                        </div>
+                        ${estadoHtml}
+                    </div>
+
+                    <!-- Números como bolitas grandes -->
+                    <div class="flex flex-wrap gap-3 justify-center mb-5">
+                        ${elegidos.map(n => {
+                            const isWinner = numerosGanadores.has(n);
+                            return `<div class="num-ball ${isWinner ? 'ganador' : ''}">${n}</div>`;
+                        }).join('')}
+                    </div>
+
+                    <!-- Resultado de aciertos -->
+                    <div class="text-center bg-gray-800/60 rounded-2xl py-4 px-6">
+                        <p class="text-gray-400 text-base uppercase font-bold mb-1">Tus aciertos</p>
+                        <p class="text-5xl font-black ${aciertosColor}">${aciertosEmoji} ${aciertos} <span class="text-2xl text-gray-500">/ 10</span></p>
+                        ${numerosGanadores.size > 0 ? '<p class="text-sm text-gray-500 mt-2">Los números en verde son los que salieron</p>' : '<p class="text-sm text-gray-500 mt-2">Aún no se sortearon los números</p>'}
                     </div>
                 `;
-                
-                const grid = document.createElement('div');
-                grid.className = 'number-grid gap-2 mt-2';
-                
-                elegidos.forEach(n => {
-                    const nDiv = document.createElement('div');
-                    nDiv.className = 'text-center py-1 rounded text-sm font-bold border border-gray-700';
-                    const isWinner = numerosGanadores.has(n.trim());
-                    if (isWinner) {
-                        nDiv.classList.add('bg-green-500', 'text-white', 'border-green-400');
-                    } else {
-                        nDiv.classList.add('bg-slate-800', 'text-gray-400');
-                    }
-                    nDiv.textContent = n.trim();
-                    grid.appendChild(nDiv);
-                });
 
-                const footer = document.createElement('div');
-                footer.className = 'mt-3 pt-2 text-right';
-                footer.innerHTML = `<span class="text-lg font-bold text-indigo-400">${j.aciertos_actuales} / 10 Aciertos</span>`;
-
-                card.appendChild(header);
-                card.appendChild(grid);
-                card.appendChild(footer);
                 lista.appendChild(card);
             });
         }
     </script>
 </body>
+
 </html>

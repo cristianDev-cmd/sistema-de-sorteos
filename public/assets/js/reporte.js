@@ -193,22 +193,30 @@ function renderTabla(filtroNombre = '') {
         const numsHtml = nums.map(n => {
             const num = n.trim();
             const isMatch = winningNumbers.some(wn => String(wn).trim() === num);
-            return `<span class="${isMatch ? 'text-green-400 font-bold' : 'text-indigo-300'}">${num}</span>`;
-        }).join(' <span class="text-gray-600">-</span> ');
+            return `<span class="inline-block px-2 py-1 rounded-lg font-black text-base ${isMatch ? 'bg-green-500/20 text-green-400 ring-1 ring-green-500/40' : 'text-gray-400'}">${num}</span>`;
+        }).join(' ');
+
+        let aciertosEmoji = '';
+        let aciertosClass = 'bg-gray-700/40 text-gray-300';
+        if (j.aciertos_actuales === 10)     { aciertosEmoji = '🏆'; aciertosClass = 'bg-yellow-500/20 text-yellow-300'; }
+        else if (j.aciertos_actuales === 9) { aciertosEmoji = '🔥'; aciertosClass = 'bg-purple-500/20 text-purple-300'; }
+        else if (j.aciertos_actuales >= 8)  { aciertosEmoji = '✨'; aciertosClass = 'bg-blue-500/20 text-blue-300'; }
+        else if (j.aciertos_actuales === 0) { aciertosEmoji = '🥗'; aciertosClass = 'bg-orange-500/20 text-orange-300'; }
 
         tr.innerHTML = `
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">#${j.id}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-white">${j.nombre_completo}</td>
-            <td class="px-6 py-4 text-sm font-mono tracking-wider">${numsHtml}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-center">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${j.aciertos_actuales >= 8 ? 'bg-green-500/20 text-green-400' : (j.aciertos_actuales === 0 ? 'bg-orange-500/20 text-orange-400' : 'bg-gray-700/30 text-gray-400')}">
-                    ${j.aciertos_actuales === 0 ? '🥗 0' : j.aciertos_actuales}
+            <td class="px-5 py-4 whitespace-nowrap text-base text-gray-400 font-bold">#${j.id}</td>
+            <td class="px-5 py-4 whitespace-nowrap text-lg font-black text-white">${j.nombre_completo}</td>
+            <td class="px-5 py-4 flex flex-wrap gap-1">${numsHtml}</td>
+            <td class="px-5 py-4 whitespace-nowrap text-center">
+                <span class="inline-flex items-center gap-1 px-4 py-2 rounded-xl text-xl font-black ${aciertosClass}">
+                    ${aciertosEmoji} ${j.aciertos_actuales}
                 </span>
             </td>
         `;
         tbody.appendChild(tr);
     });
 }
+
 
 async function cargarFaqs() {
     const container = document.getElementById('faqs-container');
