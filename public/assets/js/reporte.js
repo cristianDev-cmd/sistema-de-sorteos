@@ -14,11 +14,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('filtro-nombre').addEventListener('input', (e) => {
         renderTabla(e.target.value);
     });
-
     document.getElementById('filtro-aciertos')?.addEventListener('change', () => {
         renderTabla(document.getElementById('filtro-nombre').value);
     });
 
+    document.getElementById('filtro-aciertos-pub')?.addEventListener('change', () => {
+        renderTabla(document.getElementById('filtro-nombre').value);
     });
 });
 
