@@ -19,11 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderTabla(document.getElementById('filtro-nombre').value);
     });
 
-    document.getElementById('filtro-aciertos-pub')?.addEventListener('change', () => {
-        renderTabla(document.getElementById('filtro-nombre').value);
     });
-
-    cargarFaqs();
 });
 
 window.filtrarPorAciertosPublic = function(val) {
@@ -219,43 +215,4 @@ function renderTabla(filtroNombre = '') {
 }
 
 
-async function cargarFaqs() {
-    const container = document.getElementById('faqs-container');
-    if (!container) return;
-    try {
-        const res = await fetch('/api/faqs');
-        if (res.ok) {
-            const faqs = await res.json();
-            if (faqs.length === 0) {
-                document.getElementById('section-faqs')?.classList.add('hidden');
-                return;
-            }
-            document.getElementById('section-faqs')?.classList.remove('hidden');
-            container.innerHTML = '';
-            faqs.forEach((f, i) => {
-                container.innerHTML += `
-                    <div class="border border-gray-700/50 rounded-xl overflow-hidden">
-                        <button onclick="toggleFaq(${i})" class="w-full text-left px-6 py-4 bg-gray-800/60 hover:bg-gray-700/60 transition flex justify-between items-center gap-4">
-                            <span class="font-semibold text-white">${f.pregunta}</span>
-                            <svg id="faq-icon-${i}" class="w-5 h-5 text-indigo-400 flex-shrink-0 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </button>
-                        <div id="faq-body-${i}" class="hidden px-6 py-4 bg-gray-900/40 text-gray-300 text-sm leading-relaxed">
-                            ${f.respuesta}
-                        </div>
-                    </div>
-                `;
-            });
-        }
-    } catch (e) {
-        console.error("Error al cargar FAQs", e);
-    }
-}
 
-function toggleFaq(i) {
-    const body = document.getElementById(`faq-body-${i}`);
-    const icon = document.getElementById(`faq-icon-${i}`);
-    body.classList.toggle('hidden');
-    icon.classList.toggle('rotate-180');
-}
