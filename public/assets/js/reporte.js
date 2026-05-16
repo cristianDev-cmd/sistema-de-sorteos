@@ -19,8 +19,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderTabla(document.getElementById('filtro-nombre').value);
     });
 
+    document.getElementById('filtro-aciertos-pub')?.addEventListener('change', () => {
+        renderTabla(document.getElementById('filtro-nombre').value);
+    });
+
     cargarFaqs();
 });
+
+window.filtrarPorAciertosPublic = function(val) {
+    const sel = document.getElementById('filtro-aciertos-pub');
+    if (!sel) return;
+    sel.value = (sel.value === val) ? '' : val;
+    renderTabla(document.getElementById('filtro-nombre').value);
+};
 
 async function cargarSemanas() {
     const select = document.getElementById('filtro-semana');
@@ -138,15 +149,30 @@ async function cargarReporte(sorteoId = '') {
 function renderTabla(filtroNombre = '') {
     const tbody = document.getElementById('tbody-reporte');
     const noJugadas = document.getElementById('no-jugadas');
-    const filtroAciertos = document.getElementById('filtro-aciertos')?.value || '';
+    const filtroOrden = document.getElementById('filtro-aciertos')?.value || '';
+    const filtroPub = document.getElementById('filtro-aciertos-pub')?.value || '';
 
     let filtradas = jugadasData.filter(j =>
         j.nombre_completo.toLowerCase().includes(filtroNombre.toLowerCase())
     );
 
-    if (filtroAciertos === 'desc') {
+    // Actualizar contadores (sobre datos filtrados por nombre, sin filtro de aciertos)
+    ['pub-cnt-0','pub-cnt-8','pub-cnt-9','pub-cnt-10'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const n = parseInt(id.replace('pub-cnt-',''));
+        el.textContent = filtradas.filter(j => j.aciertos_actuales === n).length;
+    });
+
+    // Aplicar filtro por aciertos especificos
+    if (filtroPub !== '') {
+        filtradas = filtradas.filter(j => j.aciertos_actuales === parseInt(filtroPub));
+    }
+
+    // Ordenar
+    if (filtroOrden === 'desc') {
         filtradas.sort((a, b) => b.aciertos_actuales - a.aciertos_actuales);
-    } else if (filtroAciertos === 'asc') {
+    } else if (filtroOrden === 'asc') {
         filtradas.sort((a, b) => a.aciertos_actuales - b.aciertos_actuales);
     }
 

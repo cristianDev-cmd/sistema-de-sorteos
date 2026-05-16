@@ -219,6 +219,18 @@ document.getElementById('filtro-orden')?.addEventListener('change', () => {
     cargarJugadas(document.getElementById('filtro-semana').value);
 });
 
+document.getElementById('filtro-aciertos-admin')?.addEventListener('change', () => {
+    cargarJugadas(document.getElementById('filtro-semana').value);
+});
+
+window.filtrarPorAciertos = function(val) {
+    const sel = document.getElementById('filtro-aciertos-admin');
+    if (!sel) return;
+    // Toggle: if already selected, reset to 'todos'
+    sel.value = (sel.value === val) ? 'todos' : val;
+    cargarJugadas(document.getElementById('filtro-semana').value);
+};
+
 // Cargar Jugadas
 async function cargarJugadas(sorteoId = '') {
     const tbody = document.getElementById('tbody-jugadas');
@@ -267,6 +279,21 @@ async function cargarJugadas(sorteoId = '') {
             filtradas = filtradas.filter(j => j.pagada);
         } else if (filtroPago === 'pendientes') {
             filtradas = filtradas.filter(j => !j.pagada);
+        }
+
+        // Actualizar contadores (sobre datos sin filtro de aciertos)
+        const baseFiltrada = filtradas;
+        ['cnt-0','cnt-8','cnt-9','cnt-10'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const n = parseInt(id.replace('cnt-',''));
+            el.textContent = baseFiltrada.filter(j => j.aciertos_actuales === n).length;
+        });
+
+        // Filtro por aciertos específicos
+        const filtroAciertos = document.getElementById('filtro-aciertos-admin')?.value || 'todos';
+        if (filtroAciertos !== 'todos') {
+            filtradas = filtradas.filter(j => j.aciertos_actuales === parseInt(filtroAciertos));
         }
 
         if (filtroOrden === 'id_desc') {

@@ -36,7 +36,7 @@
         </div>
 
         <!-- Filtros -->
-        <div class="glass rounded-2xl p-6 mb-8 border border-gray-800 shadow-xl flex flex-col md:flex-row gap-4 items-end justify-between">
+        <div class="glass rounded-2xl p-6 mb-6 border border-gray-800 shadow-xl flex flex-col md:flex-row gap-4 items-end justify-between">
             <div class="w-full md:w-auto">
                 <label class="block text-xs text-gray-400 uppercase font-bold mb-1 ml-1">Filtrar por Semana</label>
                 <select id="filtro-semana" class="w-full md:w-56 bg-gray-800 text-white border border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none transition">
@@ -48,12 +48,46 @@
                 <input type="text" id="filtro-nombre" placeholder="Ingresa nombre..." class="w-full bg-gray-800 text-white border border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none transition">
             </div>
             <div class="w-full md:w-auto">
+                <label class="block text-xs text-gray-400 uppercase font-bold mb-1 ml-1">Filtrar por Aciertos</label>
+                <select id="filtro-aciertos-pub" class="w-full bg-gray-800 text-white border border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                    <option value="">Todos</option>
+                    <option value="0">0 Aciertos (Saladito)</option>
+                    <option value="8">8 Aciertos</option>
+                    <option value="9">9 Aciertos</option>
+                    <option value="10">10 Aciertos</option>
+                </select>
+            </div>
+            <div class="w-full md:w-auto">
                 <label class="block text-xs text-gray-400 uppercase font-bold mb-1 ml-1">Ordenar por Aciertos</label>
                 <select id="filtro-aciertos" class="w-full bg-gray-800 text-white border border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none transition">
                     <option value="">Sin orden</option>
                     <option value="desc">Mayor a menor ↓</option>
                     <option value="asc">Menor a mayor ↑</option>
                 </select>
+            </div>
+        </div>
+
+        <!-- Contadores de aciertos publicos -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            <div class="glass border border-orange-500/20 rounded-xl px-4 py-3 text-center cursor-pointer hover:border-orange-400/50 transition" onclick="filtrarPorAciertosPublic('0')">
+                <p class="text-xs text-orange-400 font-bold uppercase mb-1">🥗 Saladito</p>
+                <p id="pub-cnt-0" class="text-2xl font-black text-orange-300">-</p>
+                <p class="text-[10px] text-gray-500">0 aciertos</p>
+            </div>
+            <div class="glass border border-blue-500/20 rounded-xl px-4 py-3 text-center cursor-pointer hover:border-blue-400/50 transition" onclick="filtrarPorAciertosPublic('8')">
+                <p class="text-xs text-blue-400 font-bold uppercase mb-1">✨ Premio</p>
+                <p id="pub-cnt-8" class="text-2xl font-black text-blue-300">-</p>
+                <p class="text-[10px] text-gray-500">8 aciertos</p>
+            </div>
+            <div class="glass border border-purple-500/20 rounded-xl px-4 py-3 text-center cursor-pointer hover:border-purple-400/50 transition" onclick="filtrarPorAciertosPublic('9')">
+                <p class="text-xs text-purple-400 font-bold uppercase mb-1">🔥 Gran Premio</p>
+                <p id="pub-cnt-9" class="text-2xl font-black text-purple-300">-</p>
+                <p class="text-[10px] text-gray-500">9 aciertos</p>
+            </div>
+            <div class="glass border border-green-500/20 rounded-xl px-4 py-3 text-center cursor-pointer hover:border-green-400/50 transition" onclick="filtrarPorAciertosPublic('10')">
+                <p class="text-xs text-green-400 font-bold uppercase mb-1">🏆 Pozo Mayor</p>
+                <p id="pub-cnt-10" class="text-2xl font-black text-green-300">-</p>
+                <p class="text-[10px] text-gray-500">10 aciertos</p>
             </div>
         </div>
 
