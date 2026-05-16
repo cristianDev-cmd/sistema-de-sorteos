@@ -156,12 +156,13 @@ function renderTabla(filtroNombre = '') {
         j.nombre_completo.toLowerCase().includes(filtroNombre.toLowerCase())
     );
 
-    // Actualizar contadores (sobre datos filtrados por nombre, sin filtro de aciertos)
+    // Actualizar contadores (solo líneas pagadas, sin filtro de aciertos)
+    const pagadasParaConteo = filtradas.filter(j => j.pagada);
     ['pub-cnt-0','pub-cnt-8','pub-cnt-9','pub-cnt-10'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
         const n = parseInt(id.replace('pub-cnt-',''));
-        el.textContent = filtradas.filter(j => j.aciertos_actuales === n).length;
+        el.textContent = pagadasParaConteo.filter(j => j.aciertos_actuales === n).length;
     });
 
     // Aplicar filtro por aciertos especificos

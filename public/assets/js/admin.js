@@ -283,13 +283,13 @@ async function cargarJugadas(sorteoId = '') {
             filtradas = filtradas.filter(j => !j.pagada);
         }
 
-        // Actualizar contadores (sobre datos sin filtro de aciertos)
-        const baseFiltrada = filtradas;
+        // Actualizar contadores (solo líneas pagadas, sin filtro de aciertos)
+        const pagadasParaConteo = filtradas.filter(j => j.pagada);
         ['cnt-0','cnt-8','cnt-9','cnt-10'].forEach(id => {
             const el = document.getElementById(id);
             if (!el) return;
             const n = parseInt(id.replace('cnt-',''));
-            el.textContent = baseFiltrada.filter(j => j.aciertos_actuales === n).length;
+            el.textContent = pagadasParaConteo.filter(j => j.aciertos_actuales === n).length;
         });
 
         // Filtro por aciertos específicos
