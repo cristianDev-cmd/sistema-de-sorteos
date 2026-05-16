@@ -3,6 +3,7 @@ let token = localStorage.getItem('adminToken');
 const loginSection = document.getElementById('admin-login');
 const dashboardSection = document.getElementById('admin-dashboard');
 let _lastFiltradas = []; // Para el export PDF
+let _lastWinningNumbers = []; // Números ganadores para PDF
 
 document.addEventListener('DOMContentLoaded', () => {
     if (token) {
@@ -307,6 +308,7 @@ async function cargarJugadas(sorteoId = '') {
 
         tbody.innerHTML = '';
         _lastFiltradas = filtradas; // Guardar para PDF
+        _lastWinningNumbers = winningNumbers; // Guardar para PDF
         
         filtradas.forEach(j => {
             const tr = document.createElement('tr');
@@ -383,6 +385,7 @@ window.descargarPDFJugadas = function() {
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'landscape' });
+    const winSet = new Set(_lastWinningNumbers.map(n => String(n).trim()));
 
     // Obtener nombre del sorteo seleccionado
     const selectSemana = document.getElementById('filtro-semana');
@@ -392,6 +395,7 @@ window.descargarPDFJugadas = function() {
     // Header
     doc.setFontSize(22);
     doc.setFont(undefined, 'bold');
+    doc.setTextColor(30);
     doc.text('La Polla - Reporte de Jugadas', 14, 20);
 
     doc.setFontSize(11);
@@ -411,23 +415,37 @@ window.descargarPDFJugadas = function() {
 
     doc.text(`Pagadas: ${pagadas} | Pendientes: ${pendientes} | 0 aciertos: ${cnt0} | 8 aciertos: ${cnt8} | 9 aciertos: ${cnt9} | 10 aciertos: ${cnt10}`, 14, 46);
 
-    // Tabla
+    // Números ganadores en el header
+    if (_lastWinningNumbers.length > 0) {
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(22, 163, 74);
+        doc.text(`Números sorteados: ${_lastWinningNumbers.map(n => String(n).trim()).join(' - ')}`, 14, 52);
+    }
+
+    // Tabla con números como cuadrículas
+    const BOX = 8;    // tamaño de cada caja de número
+    const GAP = 1.5;  // espacio entre cajas
+    const NUMS_PER_ROW = 10;
+    const ROW_H = BOX + GAP; // height of number area per row
+    const NUM_COL_W = (BOX + GAP) * NUMS_PER_ROW + 4; // width for numbers column
+
     const rows = _lastFiltradas.map(j => [
         j.id,
         j.nombre_completo,
         j.telefono,
-        j.numeros_elegidos,
+        j.numeros_elegidos, // placeholder, drawn custom
         `${j.aciertos_actuales} / 10`,
         j.pagada ? 'PAGADA' : 'PENDIENTE'
     ]);
 
     doc.autoTable({
-        startY: 52,
-        head: [['ID', 'Jugador', 'Teléfono', 'Números Jugados', 'Aciertos', 'Estado Pago']],
+        startY: _lastWinningNumbers.length > 0 ? 58 : 52,
+        head: [['ID', 'Jugador', 'Teléfono', 'Números Jugados', 'Aciertos', 'Estado']],
         body: rows,
         theme: 'grid',
         headStyles: {
-            fillColor: [79, 70, 229], // indigo-600
+            fillColor: [79, 70, 229],
             textColor: 255,
             fontStyle: 'bold',
             fontSize: 10
@@ -435,15 +453,16 @@ window.descargarPDFJugadas = function() {
         styles: {
             fontSize: 9,
             cellPadding: 3,
-            valign: 'middle'
+            valign: 'middle',
+            minCellHeight: ROW_H + 6
         },
         columnStyles: {
             0: { cellWidth: 15, halign: 'center' },
-            1: { cellWidth: 45 },
-            2: { cellWidth: 35 },
-            3: { cellWidth: 'auto', fontStyle: 'bold', fontSize: 8 },
-            4: { cellWidth: 25, halign: 'center', fontStyle: 'bold' },
-            5: { cellWidth: 28, halign: 'center' }
+            1: { cellWidth: 40 },
+            2: { cellWidth: 32 },
+            3: { cellWidth: NUM_COL_W, textColor: [255,255,255] }, // text hidden (white on white-ish)
+            4: { cellWidth: 22, halign: 'center', fontStyle: 'bold' },
+            5: { cellWidth: 24, halign: 'center' }
         },
         bodyStyles: {
             lineColor: [200, 200, 200],
@@ -452,8 +471,12 @@ window.descargarPDFJugadas = function() {
         alternateRowStyles: {
             fillColor: [245, 245, 250]
         },
-        // Colorear estado de pago
         didParseCell: function(data) {
+            // Hide text in numbers column (we draw custom)
+            if (data.section === 'body' && data.column.index === 3) {
+                data.cell.styles.textColor = data.cell.styles.fillColor || [255,255,255];
+            }
+            // Estado pago colors
             if (data.section === 'body' && data.column.index === 5) {
                 if (data.cell.raw === 'PAGADA') {
                     data.cell.styles.textColor = [22, 163, 74];
@@ -463,7 +486,7 @@ window.descargarPDFJugadas = function() {
                     data.cell.styles.fontStyle = 'bold';
                 }
             }
-            // Resaltar aciertos altos
+            // Aciertos colors
             if (data.section === 'body' && data.column.index === 4) {
                 const val = parseInt(data.cell.raw);
                 if (val >= 8) {
@@ -474,7 +497,38 @@ window.descargarPDFJugadas = function() {
                 }
             }
         },
-        // Footer
+        didDrawCell: function(data) {
+            // Draw number grid in column 3
+            if (data.section === 'body' && data.column.index === 3) {
+                const nums = String(data.cell.raw).split(',').map(n => n.trim());
+                const startX = data.cell.x + 2;
+                const startY = data.cell.y + 3;
+
+                nums.forEach((num, i) => {
+                    const col = i % NUMS_PER_ROW;
+                    const row = Math.floor(i / NUMS_PER_ROW);
+                    const x = startX + col * (BOX + GAP);
+                    const y = startY + row * (BOX + GAP);
+                    const isMatch = winSet.has(num);
+
+                    // Box fill
+                    if (isMatch) {
+                        doc.setFillColor(22, 163, 74);  // green
+                        doc.setDrawColor(16, 130, 60);
+                    } else {
+                        doc.setFillColor(240, 240, 245); // light gray
+                        doc.setDrawColor(180, 180, 190);
+                    }
+                    doc.roundedRect(x, y, BOX, BOX, 1, 1, 'FD');
+
+                    // Number text
+                    doc.setFontSize(7);
+                    doc.setFont(undefined, 'bold');
+                    doc.setTextColor(isMatch ? 255 : 60);
+                    doc.text(num, x + BOX/2, y + BOX/2 + 1, { align: 'center' });
+                });
+            }
+        },
         didDrawPage: function(data) {
             doc.setFontSize(8);
             doc.setTextColor(150);
