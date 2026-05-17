@@ -51,23 +51,8 @@ async function recalcularAciertos(env, sorteo_id) {
                 "UPDATE jugadas SET aciertos_actuales = ? WHERE id = ?"
             ).bind(aciertos, jugada.id).run();
             
-            // Lógica de premios automatizada
-            if (aciertos === 8 && jugada.aciertos_actuales < 8) {
-                const jData = await env.DB.prepare("SELECT jugador_id FROM jugadas WHERE id = ?").bind(jugada.id).first();
-                if (jData) {
-                    await env.DB.prepare(
-                        "UPDATE jugadores SET lineas_gratis_disponibles = lineas_gratis_disponibles + 1 WHERE id = ?"
-                    ).bind(jData.jugador_id).run();
-                }
-            } else if (aciertos > 8 && jugada.aciertos_actuales === 8) {
-                // Revoke the free line if they got more than 8 hits (since exactly 8 is the requirement)
-                const jData = await env.DB.prepare("SELECT jugador_id FROM jugadas WHERE id = ?").bind(jugada.id).first();
-                if (jData) {
-                    await env.DB.prepare(
-                        "UPDATE jugadores SET lineas_gratis_disponibles = MAX(0, lineas_gratis_disponibles - 1) WHERE id = ?"
-                    ).bind(jData.jugador_id).run();
-                }
-            }
+            // Nota: La lógica de otorgar líneas gratis (8 aciertos) se removió de aquí.
+            // Ahora se ejecuta exclusivamente al cerrar el sorteo en sorteos.js
         }
     }
 }

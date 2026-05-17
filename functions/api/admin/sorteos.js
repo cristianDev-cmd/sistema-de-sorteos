@@ -27,6 +27,19 @@ export async function onRequestPost({ request, env }) {
             await env.DB.prepare(
                 "UPDATE sorteos SET estado = 'Cerrado', fecha_fin = ? WHERE id = ?"
             ).bind(fecha_fin, id).run();
+
+            // Otorgar líneas gratis a quienes obtuvieron exactamente 8 aciertos
+            const { results: ganadores_gratis } = await env.DB.prepare(
+                "SELECT jugador_id, COUNT(*) as cantidad FROM jugadas WHERE sorteo_id = ? AND aciertos_actuales = 8 AND pagada = 1 GROUP BY jugador_id"
+            ).bind(id).all();
+
+            if (ganadores_gratis && ganadores_gratis.length > 0) {
+                for (const ganador of ganadores_gratis) {
+                    await env.DB.prepare(
+                        "UPDATE jugadores SET lineas_gratis_disponibles = lineas_gratis_disponibles + ? WHERE id = ?"
+                    ).bind(ganador.cantidad, ganador.jugador_id).run();
+                }
+            }
         } else if (action === "crear") {
             // 1. Crear el nuevo sorteo
             const result = await env.DB.prepare(
