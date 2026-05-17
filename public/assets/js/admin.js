@@ -635,6 +635,79 @@ window.cerrarModalResultados = function() {
     document.getElementById('modal-resultados-20').classList.add('hidden');
 };
 
+// Auto-fill desde Quiniela de Mendoza (scraping via backend)
+window.autoFillFromQuiniela = async function() {
+    const btn = document.getElementById('btn-scrape-fill');
+    const statusEl = document.getElementById('scrape-status');
+    const drawSelect = document.getElementById('scrape-draw-select');
+    const draw = drawSelect ? drawSelect.value : 'NOCTURNA';
+    
+    btn.disabled = true;
+    btn.innerHTML = `
+        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+        Consultando...
+    `;
+    statusEl.classList.remove('hidden');
+    statusEl.className = 'mt-2 text-xs text-yellow-400';
+    statusEl.textContent = `Consultando resultados de ${draw} en loteriasmundiales.com.ar...`;
+    
+    try {
+        const res = await fetch(`/api/admin/scrape-mendoza?draw=${encodeURIComponent(draw)}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await res.json();
+        
+        if (!res.ok || !data.success) {
+            throw new Error(data.error || 'Error desconocido al obtener resultados');
+        }
+        
+        // Fill the 20 inputs
+        const numbers = data.numbers;
+        for (let i = 0; i < 20; i++) {
+            const input = document.getElementById(`res-pos-${i + 1}`);
+            if (input && numbers[i]) {
+                input.value = numbers[i];
+                // Flash animation
+                input.style.transition = 'all 0.3s';
+                input.style.borderColor = '#22c55e';
+                input.style.boxShadow = '0 0 8px rgba(34, 197, 94, 0.4)';
+                setTimeout(() => {
+                    input.style.borderColor = '';
+                    input.style.boxShadow = '';
+                }, 1500);
+            }
+        }
+        
+        // Auto-select day of the week
+        if (data.dia_semana) {
+            const diaSelect = document.getElementById('dia_semana_20');
+            if (diaSelect) {
+                // Try to match the option values
+                for (let opt of diaSelect.options) {
+                    if (opt.value === data.dia_semana) {
+                        diaSelect.value = data.dia_semana;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        statusEl.className = 'mt-2 text-xs text-green-400 font-bold';
+        statusEl.textContent = `✅ Se cargaron los 20 números de ${draw} correctamente. Día: ${data.dia_semana || 'detectado'}`;
+        
+    } catch (e) {
+        statusEl.className = 'mt-2 text-xs text-red-400 font-bold';
+        statusEl.textContent = `❌ ${e.message}`;
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = `
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            Llenar automáticamente
+        `;
+    }
+};
+
 document.getElementById('form-resultados-20')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = e.target.querySelector('button[type="submit"]');
