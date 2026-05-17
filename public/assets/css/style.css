@@ -10,6 +10,7 @@
 
 body {
   font-family: 'Outfit', sans-serif;
+  font-size: 18px;
   background-color: var(--bg-dark);
   color: #F8FAFC;
   min-height: 100vh;
@@ -41,12 +42,18 @@ body {
 .number-btn {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 10px 0;
+  border-radius: 12px;
+  padding: 12px 0;
+  min-height: 52px;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
+  user-select: none;
 }
 
 .number-btn:hover {
@@ -81,14 +88,20 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Custom inputs */
 input {
   background: rgba(15, 23, 42, 0.6) !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
   color: white !important;
+  font-size: 1.1rem !important;
+  padding: 0.875rem 1rem !important;
 }
 input:focus {
   border-color: var(--primary) !important;
   outline: none !important;
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.3) !important;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.4) !important;
+}
+
+button {
+  min-height: 56px;
+  font-size: 1.1rem;
 }

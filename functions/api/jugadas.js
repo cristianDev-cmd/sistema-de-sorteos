@@ -43,9 +43,16 @@ export async function onRequestPost({ request, env }) {
         } catch(e) { /* no results yet */ }
 
         // Insertar cada línea con aciertos calculados
-        for (const linea of lineas) {
+        for (const lineaItem of lineas) {
+            let lineaNumeros = typeof lineaItem === 'string' ? lineaItem : lineaItem.numeros;
+            let solicita_gratis = typeof lineaItem === 'object' ? lineaItem.es_gratis : false;
+            
             let usa_gratis = 0;
-            if (lineas_gratis > 0) {
+            if (solicita_gratis && lineas_gratis > 0) {
+                usa_gratis = 1;
+                lineas_gratis--;
+            } else if (typeof lineaItem === 'string' && lineas_gratis > 0) {
+                // Fallback for old frontend format (if still used)
                 usa_gratis = 1;
                 lineas_gratis--;
             }
@@ -53,14 +60,14 @@ export async function onRequestPost({ request, env }) {
             // Calcular aciertos contra números ya sorteados
             let aciertos = 0;
             if (todos_ganadores.size > 0) {
-                linea.split(",").forEach(n => {
+                lineaNumeros.split(",").forEach(n => {
                     if (todos_ganadores.has(n.trim())) aciertos++;
                 });
             }
             
             const insert = await env.DB.prepare(
                 "INSERT INTO jugadas (jugador_id, sorteo_id, numeros_elegidos, es_linea_gratis, aciertos_actuales) VALUES (?, ?, ?, ?, ?)"
-            ).bind(jugador_id, sorteo_id, linea, usa_gratis, aciertos).run();
+            ).bind(jugador_id, sorteo_id, lineaNumeros, usa_gratis, aciertos).run();
             
             ids_insertados.push(insert.meta.last_row_id);
         }

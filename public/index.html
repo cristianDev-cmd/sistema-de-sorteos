@@ -110,9 +110,14 @@
                 <!-- Generado por JS -->
             </div>
 
+            <div id="toggle-gratis-container" class="hidden flex items-center justify-center gap-3 mb-5 bg-indigo-500/10 border border-indigo-500/30 py-3 px-4 rounded-xl cursor-pointer" onclick="document.getElementById('usar-gratis').click()">
+                <input type="checkbox" id="usar-gratis" class="w-6 h-6 accent-indigo-500 cursor-pointer" onclick="event.stopPropagation()">
+                <label for="usar-gratis" class="text-indigo-300 text-lg font-bold cursor-pointer select-none">🎁 Usar mi línea gratis</label>
+            </div>
+
             <div class="flex gap-3">
                 <button id="btn-agregar-linea" disabled
-                    class="flex-1 bg-gray-700 text-gray-400 font-bold py-3 rounded-xl transition cursor-not-allowed">
+                    class="flex-1 bg-gray-700 text-gray-400 font-bold py-4 rounded-xl transition cursor-not-allowed text-lg">
                     Guardar Línea
                 </button>
             </div>

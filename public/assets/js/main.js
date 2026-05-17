@@ -115,6 +115,7 @@ formJugador.addEventListener('submit', async (e) => {
                 if (jugadorData.lineas_gratis > 0) {
                     infoGratis.classList.remove('hidden');
                     cantidadGratis.textContent = jugadorData.lineas_gratis;
+                    document.getElementById('toggle-gratis-container').classList.remove('hidden');
                 }
 
                 step1.classList.remove('active');
@@ -165,6 +166,7 @@ formJugador.addEventListener('submit', async (e) => {
                 if (jugadorData.lineas_gratis > 0) {
                     infoGratis.classList.remove('hidden');
                     cantidadGratis.textContent = jugadorData.lineas_gratis;
+                    document.getElementById('toggle-gratis-container').classList.remove('hidden');
                 }
 
                 step1.classList.remove('active');
@@ -220,9 +222,29 @@ function toggleNumero(btn, num) {
 btnAgregarLinea.addEventListener('click', () => {
     if (numerosSeleccionados.length !== 10) return;
 
+    const cbGratis = document.getElementById('usar-gratis');
+    const esGratis = cbGratis && cbGratis.checked;
+
+    if (esGratis && jugadorData.lineas_gratis > 0) {
+        jugadorData.lineas_gratis--;
+        cantidadGratis.textContent = jugadorData.lineas_gratis;
+        cbGratis.checked = false;
+        if (jugadorData.lineas_gratis === 0) {
+            document.getElementById('toggle-gratis-container').classList.add('hidden');
+            infoGratis.classList.add('hidden');
+        }
+    } else if (esGratis) {
+        alert("No te quedan líneas gratis disponibles.");
+        cbGratis.checked = false;
+        return;
+    }
+
     // Ordenar números para que queden prolijos
     numerosSeleccionados.sort((a, b) => parseInt(a) - parseInt(b));
-    lineasElegidas.push([...numerosSeleccionados]);
+    lineasElegidas.push({
+        numeros: [...numerosSeleccionados],
+        es_gratis: esGratis
+    });
     
     // Actualizar UI
     actualizarListaLineas();
@@ -245,10 +267,11 @@ function actualizarListaLineas() {
     }
     
     listaLineas.innerHTML = '';
-    lineasElegidas.forEach((linea, index) => {
+    lineasElegidas.forEach((lineaObj, index) => {
         const li = document.createElement('li');
-        li.className = 'flex justify-between items-center bg-slate-800/50 p-2 rounded';
-        li.innerHTML = `<span>Línea ${index + 1}: <strong class="text-indigo-300 tracking-wider">${linea.join(' - ')}</strong></span>`;
+        li.className = 'flex justify-between items-center bg-slate-800/50 p-2 rounded mb-2';
+        const badge = lineaObj.es_gratis ? `<span class="bg-indigo-500/20 text-indigo-300 text-xs px-2 py-1 rounded font-bold ml-2">🎁 Gratis</span>` : '';
+        li.innerHTML = `<span>Línea ${index + 1}: <strong class="text-indigo-300 tracking-wider">${lineaObj.numeros.join(' - ')}</strong>${badge}</span>`;
         listaLineas.appendChild(li);
     });
 }
@@ -258,8 +281,11 @@ btnIrCheckout.addEventListener('click', async () => {
     btnIrCheckout.disabled = true;
     btnIrCheckout.textContent = 'Procesando...';
 
-    // Preparar el string de lineas
-    const lineasStrings = lineasElegidas.map(l => l.join(','));
+    // Preparar el array para backend (mezcla de objetos y strings no es problema ahora que backend soporta)
+    const lineasData = lineasElegidas.map(l => ({
+        numeros: l.numeros.join(','),
+        es_gratis: l.es_gratis
+    }));
 
     try {
         const res = await fetch('/api/jugadas', {
@@ -267,7 +293,7 @@ btnIrCheckout.addEventListener('click', async () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 jugador_id: jugadorData.id,
-                lineas: lineasStrings
+                lineas: lineasData
             })
         });
 
@@ -276,12 +302,10 @@ btnIrCheckout.addEventListener('click', async () => {
             idsJugadas = result.ids;
 
             // Calcular totales
-            let lineasPagas = lineasElegidas.length;
-            let lineasGratisUsadas = 0;
+            let lineasPagas = lineasElegidas.filter(l => !l.es_gratis).length;
+            let lineasGratisUsadas = lineasElegidas.filter(l => l.es_gratis).length;
             
-            if (jugadorData.lineas_gratis > 0) {
-                lineasGratisUsadas = Math.min(lineasPagas, jugadorData.lineas_gratis);
-                lineasPagas -= lineasGratisUsadas;
+            if (lineasGratisUsadas > 0) {
                 document.getElementById('resumen-descuento-container').classList.remove('hidden');
                 document.getElementById('resumen-descuento').textContent = `-$${lineasGratisUsadas * PRECIO_LINEA}`;
             }
@@ -312,14 +336,8 @@ btnIrCheckout.addEventListener('click', async () => {
 btnWhatsapp.addEventListener('click', () => {
     if (!configuracionAdmin) return alert("Falta cargar configuración de admin");
     
-    let total = 0;
-    let lineasPagas = lineasElegidas.length;
-    let lineasGratisUsadas = 0;
-    if (jugadorData.lineas_gratis > 0) {
-        lineasGratisUsadas = Math.min(lineasPagas, jugadorData.lineas_gratis);
-        lineasPagas -= lineasGratisUsadas;
-    }
-    total = lineasPagas * PRECIO_LINEA;
+    let lineasPagas = lineasElegidas.filter(l => !l.es_gratis).length;
+    let total = lineasPagas * PRECIO_LINEA;
 
     const idsFormateados = idsJugadas.join(', ');
     const mensaje = `Hola, soy ${jugadorData.nombre_completo}. Mi teléfono es ${jugadorData.telefono}.\nCargué las líneas #${idsFormateados}.\nEl total a pagar es $${total}.\nTe adjunto el comprobante de transferencia a ${configuracionAdmin.admin_alias}.`;
