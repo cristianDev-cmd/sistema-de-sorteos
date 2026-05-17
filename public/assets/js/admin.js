@@ -621,7 +621,7 @@ window.abrirModalResultados = function() {
         const inputHtml = `
             <div class="flex items-center gap-2">
                 <span class="w-8 text-right font-bold text-gray-500">${i}.</span>
-                <input type="text" id="res-pos-${i}" maxlength="4" placeholder="Ej: 1234" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white font-bold text-center tracking-widest" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                <input type="tel" inputmode="numeric" pattern="[0-9]*" id="res-pos-${i}" maxlength="4" placeholder="Ej: 1234" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white font-bold text-center tracking-widest" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
             </div>
         `;
         if (i <= 10) col1.innerHTML += inputHtml;
@@ -1000,11 +1000,11 @@ window.editarPozosSorteo = async function(id, s, c, sa, ds, dc, dsa) {
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-xs text-gray-400 mb-1">Monto ($)</label>
-                        <input type="number" id="mod-pozo-sem" value="${s}" oninput="recalcPozos()" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white">
+                        <input type="number" inputmode="numeric" pattern="[0-9]*" id="mod-pozo-sem" value="${s}" oninput="recalcPozos()" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white">
                     </div>
                     <div>
                         <label class="block text-xs text-gray-400 mb-1">Se divide entre</label>
-                        <input type="number" id="mod-div-sem" value="${ds}" min="1" oninput="recalcPozos()" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white">
+                        <input type="number" inputmode="numeric" pattern="[0-9]*" id="mod-div-sem" value="${ds}" min="1" oninput="recalcPozos()" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white">
                     </div>
                 </div>
                 <p id="calc-sem" class="text-xs text-gray-400 mt-1">Por ganador: <span class="text-green-400 font-bold">$${Math.floor(s/ds).toLocaleString()}</span></p>
@@ -1015,11 +1015,11 @@ window.editarPozosSorteo = async function(id, s, c, sa, ds, dc, dsa) {
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-xs text-gray-400 mb-1">Monto ($)</label>
-                        <input type="number" id="mod-pozo-con" value="${c}" oninput="recalcPozos()" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white">
+                        <input type="number" inputmode="numeric" pattern="[0-9]*" id="mod-pozo-con" value="${c}" oninput="recalcPozos()" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white">
                     </div>
                     <div>
                         <label class="block text-xs text-gray-400 mb-1">Se divide entre</label>
-                        <input type="number" id="mod-div-con" value="${dc}" min="1" oninput="recalcPozos()" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white">
+                        <input type="number" inputmode="numeric" pattern="[0-9]*" id="mod-div-con" value="${dc}" min="1" oninput="recalcPozos()" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white">
                     </div>
                 </div>
                 <p id="calc-con" class="text-xs text-gray-400 mt-1">Por ganador: <span class="text-green-400 font-bold">$${Math.floor(c/dc).toLocaleString()}</span></p>
@@ -1030,11 +1030,11 @@ window.editarPozosSorteo = async function(id, s, c, sa, ds, dc, dsa) {
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-xs text-gray-400 mb-1">Monto ($)</label>
-                        <input type="number" id="mod-pozo-sal" value="${sa}" oninput="recalcPozos()" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white">
+                        <input type="number" inputmode="numeric" pattern="[0-9]*" id="mod-pozo-sal" value="${sa}" oninput="recalcPozos()" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white">
                     </div>
                     <div>
                         <label class="block text-xs text-gray-400 mb-1">Se divide entre</label>
-                        <input type="number" id="mod-div-sal" value="${dsa}" min="1" oninput="recalcPozos()" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white">
+                        <input type="number" inputmode="numeric" pattern="[0-9]*" id="mod-div-sal" value="${dsa}" min="1" oninput="recalcPozos()" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white">
                     </div>
                 </div>
                 <p id="calc-sal" class="text-xs text-gray-400 mt-1">Por ganador: <span class="text-green-400 font-bold">$${Math.floor(sa/dsa).toLocaleString()}</span></p>
@@ -1244,7 +1244,7 @@ window.abrirModalNuevoPozo = function() {
             Modal.close();
             try { await fetch('/api/admin/pozos', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(d) }); Modal.alert('Pozo creado.'); cargarPozos(); } catch(e) { Modal.alert('Error.'); }
         };
-        Modal.open('Nuevo Pozo', `<label class="block text-sm mb-1 text-gray-400">Sorteo</label><select id="mod-pozo-sorteo" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2">${optsHtml}</select><label class="block text-sm mb-1 text-gray-400">Nombre</label><input type="text" id="mod-pozo-nombre" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Descripción (opcional)</label><input type="text" id="mod-pozo-desc" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Monto ($)</label><input type="number" id="mod-pozo-monto" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Ganadores</label><input type="number" id="mod-pozo-divs" value="1" min="1" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white">`,
+        Modal.open('Nuevo Pozo', `<label class="block text-sm mb-1 text-gray-400">Sorteo</label><select id="mod-pozo-sorteo" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2">${optsHtml}</select><label class="block text-sm mb-1 text-gray-400">Nombre</label><input type="text" id="mod-pozo-nombre" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Descripción (opcional)</label><input type="text" id="mod-pozo-desc" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Monto ($)</label><input type="number" inputmode="numeric" pattern="[0-9]*" id="mod-pozo-monto" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Ganadores</label><input type="number" inputmode="numeric" pattern="[0-9]*" id="mod-pozo-divs" value="1" min="1" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white">`,
         `<button onclick="Modal.close()" class="px-4 py-2 bg-gray-700 text-white rounded">Cancelar</button><button onclick="window._tempSavePozo()" class="px-4 py-2 bg-green-600 font-bold text-white rounded">Crear</button>`);
     });
 }
@@ -1255,7 +1255,7 @@ window.abrirModalEditarPozo = function(id) {
         Modal.close();
         try { await fetch('/api/admin/pozos', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(d) }); Modal.alert('Pozo actualizado.'); cargarPozos(); } catch(e) { Modal.alert('Error.'); }
     };
-    Modal.open('Editar Pozo', `<label class="block text-sm mb-1 text-gray-400">Nombre</label><input type="text" id="mod-ep-nombre" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Descripción</label><input type="text" id="mod-ep-desc" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Monto ($)</label><input type="number" id="mod-ep-monto" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Ganadores</label><input type="number" id="mod-ep-divs" min="1" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white">`,
+    Modal.open('Editar Pozo', `<label class="block text-sm mb-1 text-gray-400">Nombre</label><input type="text" id="mod-ep-nombre" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Descripción</label><input type="text" id="mod-ep-desc" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Monto ($)</label><input type="number" inputmode="numeric" pattern="[0-9]*" id="mod-ep-monto" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Ganadores</label><input type="number" inputmode="numeric" pattern="[0-9]*" id="mod-ep-divs" min="1" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white">`,
     `<button onclick="Modal.close()" class="px-4 py-2 bg-gray-700 text-white rounded">Cancelar</button><button onclick="window._tempUpdatePozo()" class="px-4 py-2 bg-indigo-600 font-bold text-white rounded">Guardar</button>`);
     setTimeout(()=>{ document.getElementById('mod-ep-nombre').value=p.nombre; document.getElementById('mod-ep-desc').value=p.descripcion||''; document.getElementById('mod-ep-monto').value=p.monto_total; document.getElementById('mod-ep-divs').value=p.divisiones; },50);
 }
@@ -1278,13 +1278,13 @@ async function cargarFaqsAdmin() {
 }
 window.abrirModalNuevaFaq = function() {
     window._tempSaveFaq = async () => { const d={pregunta:document.getElementById('mod-faq-preg').value,respuesta:document.getElementById('mod-faq-resp').value,orden:document.getElementById('mod-faq-orden').value}; Modal.close(); try{await fetch('/api/admin/faqs',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify(d)});Modal.alert('FAQ creada.');cargarFaqsAdmin();}catch(e){Modal.alert('Error.');} };
-    Modal.open('Nueva FAQ', `<label class="block text-sm mb-1 text-gray-400">Pregunta</label><input type="text" id="mod-faq-preg" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Respuesta</label><textarea id="mod-faq-resp" rows="3" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"></textarea><label class="block text-sm mb-1 text-gray-400">Orden</label><input type="number" id="mod-faq-orden" value="0" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white">`,
+    Modal.open('Nueva FAQ', `<label class="block text-sm mb-1 text-gray-400">Pregunta</label><input type="text" id="mod-faq-preg" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Respuesta</label><textarea id="mod-faq-resp" rows="3" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"></textarea><label class="block text-sm mb-1 text-gray-400">Orden</label><input type="number" inputmode="numeric" pattern="[0-9]*" id="mod-faq-orden" value="0" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white">`,
     `<button onclick="Modal.close()" class="px-4 py-2 bg-gray-700 text-white rounded">Cancelar</button><button onclick="window._tempSaveFaq()" class="px-4 py-2 bg-green-600 font-bold text-white rounded">Crear</button>`);
 }
 window.abrirModalEditarFaq = function(id) {
     const f=(window._faqsCache||[]).find(x=>x.id===id); if(!f) return;
     window._tempUpdateFaq = async () => { const d={id,pregunta:document.getElementById('mod-efaq-preg').value,respuesta:document.getElementById('mod-efaq-resp').value,orden:document.getElementById('mod-efaq-orden').value}; Modal.close(); try{await fetch('/api/admin/faqs',{method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify(d)});Modal.alert('FAQ actualizada.');cargarFaqsAdmin();}catch(e){Modal.alert('Error.');} };
-    Modal.open('Editar FAQ', `<label class="block text-sm mb-1 text-gray-400">Pregunta</label><input type="text" id="mod-efaq-preg" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Respuesta</label><textarea id="mod-efaq-resp" rows="3" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"></textarea><label class="block text-sm mb-1 text-gray-400">Orden</label><input type="number" id="mod-efaq-orden" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white">`,
+    Modal.open('Editar FAQ', `<label class="block text-sm mb-1 text-gray-400">Pregunta</label><input type="text" id="mod-efaq-preg" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"><label class="block text-sm mb-1 text-gray-400">Respuesta</label><textarea id="mod-efaq-resp" rows="3" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white mb-2"></textarea><label class="block text-sm mb-1 text-gray-400">Orden</label><input type="number" inputmode="numeric" pattern="[0-9]*" id="mod-efaq-orden" class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 text-white">`,
     `<button onclick="Modal.close()" class="px-4 py-2 bg-gray-700 text-white rounded">Cancelar</button><button onclick="window._tempUpdateFaq()" class="px-4 py-2 bg-indigo-600 font-bold text-white rounded">Guardar</button>`);
     setTimeout(()=>{ document.getElementById('mod-efaq-preg').value=f.pregunta; document.getElementById('mod-efaq-resp').value=f.respuesta; document.getElementById('mod-efaq-orden').value=f.orden||0; },50);
 }
