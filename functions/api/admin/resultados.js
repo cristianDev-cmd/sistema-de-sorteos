@@ -32,7 +32,16 @@ async function recalcularAciertos(env, sorteo_id) {
 
     let todos_ganadores = new Set();
     resultados.forEach(r => {
-        r.numeros_ganadores_dia.split(",").forEach(n => todos_ganadores.add(n.trim()));
+        const numeros = r.numeros_ganadores_dia.split(",");
+        // Solo tomar las posiciones 1 a la 15 inclusive (índices 0 al 14)
+        for (let i = 0; i < Math.min(15, numeros.length); i++) {
+            let n = numeros[i].trim();
+            if (n.length > 0) {
+                // Tomar la "decena" (las últimas 2 cifras)
+                let decena = n.slice(-2);
+                todos_ganadores.add(decena);
+            }
+        }
     });
 
     const { results: jugadas } = await env.DB.prepare(

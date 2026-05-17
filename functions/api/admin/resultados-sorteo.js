@@ -16,12 +16,16 @@ export async function onRequestGet({ request, env }) {
 
         let todos_ganadores = [];
         results.forEach(r => {
-            r.numeros_ganadores_dia.split(",").forEach(n => {
-                const trimmed = n.trim();
-                if (trimmed && !todos_ganadores.includes(trimmed)) {
-                    todos_ganadores.push(trimmed);
+            const numeros = r.numeros_ganadores_dia.split(",");
+            for (let i = 0; i < Math.min(15, numeros.length); i++) {
+                let n = numeros[i].trim();
+                if (n.length > 0) {
+                    let decena = n.slice(-2);
+                    if (!todos_ganadores.includes(decena)) {
+                        todos_ganadores.push(decena);
+                    }
                 }
-            });
+            }
         });
 
         return new Response(JSON.stringify(todos_ganadores), { status: 200 });

@@ -609,15 +609,53 @@ window.borrarJugada = function(id) {
     });
 }
 
-// Cargar Resultados
-document.getElementById('form-resultados').addEventListener('submit', async (e) => {
+// Lógica Modal 20 Resultados
+window.abrirModalResultados = function() {
+    const col1 = document.getElementById('col-resultados-1');
+    const col2 = document.getElementById('col-resultados-2');
+    col1.innerHTML = '';
+    col2.innerHTML = '';
+    
+    // Generar los 20 inputs
+    for (let i = 1; i <= 20; i++) {
+        const inputHtml = `
+            <div class="flex items-center gap-2">
+                <span class="w-8 text-right font-bold text-gray-500">${i}.</span>
+                <input type="text" id="res-pos-${i}" maxlength="4" placeholder="Ej: 1234" class="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white font-bold text-center tracking-widest" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            </div>
+        `;
+        if (i <= 10) col1.innerHTML += inputHtml;
+        else col2.innerHTML += inputHtml;
+    }
+    
+    document.getElementById('modal-resultados-20').classList.remove('hidden');
+};
+
+window.cerrarModalResultados = function() {
+    document.getElementById('modal-resultados-20').classList.add('hidden');
+};
+
+document.getElementById('form-resultados-20')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const btn = e.target.querySelector('button');
+    const btn = e.target.querySelector('button[type="submit"]');
     btn.disabled = true;
     btn.textContent = "Procesando...";
 
-    const numeros = document.getElementById('numeros_ganadores').value;
-    const dia_semana = document.getElementById('dia_semana').value;
+    let numeros = [];
+    let valid = true;
+    
+    for (let i = 1; i <= 20; i++) {
+        let val = document.getElementById(`res-pos-${i}`).value;
+        if (val.length < 4 && val.length > 0) {
+            val = val.padStart(4, '0');
+        } else if (val.length === 0) {
+            val = "0000"; // o requerir que todos estén llenos. Asumo 0000 si está vacío.
+        }
+        numeros.push(val);
+    }
+    
+    const dia_semana = document.getElementById('dia_semana_20').value;
+    const numerosString = numeros.join(',');
     
     try {
         const res = await fetch('/api/admin/resultados', {
@@ -626,12 +664,12 @@ document.getElementById('form-resultados').addEventListener('submit', async (e) 
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}` 
             },
-            body: JSON.stringify({ numeros_ganadores_dia: numeros, dia_semana })
+            body: JSON.stringify({ numeros_ganadores_dia: numerosString, dia_semana })
         });
         
         if (res.ok) {
             Modal.alert("Resultados cargados y aciertos recalculados.");
-            document.getElementById('numeros_ganadores').value = '';
+            cerrarModalResultados();
             cargarResultadosAdmin();
         } else {
             Modal.alert("Error al cargar resultados.");
@@ -640,7 +678,7 @@ document.getElementById('form-resultados').addEventListener('submit', async (e) 
         Modal.alert("Error de conexión");
     } finally {
         btn.disabled = false;
-        btn.textContent = "Guardar y Recalcular Aciertos";
+        btn.textContent = "Guardar y Recalcular";
     }
 });
 

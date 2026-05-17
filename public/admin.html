@@ -236,31 +236,53 @@
                     <div class="max-w-xl">
                         <div class="glass p-6 rounded-xl border border-gray-700">
                             <h2 class="text-xl font-bold mb-4">Cargar Resultados del Día</h2>
-                            <form id="form-resultados" class="space-y-4">
-                                <div>
-                                    <label class="block text-sm mb-1 text-gray-400">Día de la semana</label>
-                                    <select id="dia_semana" required
-                                        class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
-                                        <option value="Lunes">Lunes</option>
-                                        <option value="Martes">Martes</option>
-                                        <option value="Miércoles">Miércoles</option>
-                                        <option value="Jueves">Jueves</option>
-                                        <option value="Viernes">Viernes</option>
-                                        <option value="Sábado">Sábado</option>
-                                        <option value="Domingo">Domingo</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm mb-1 text-gray-400">Números que salieron hoy (separados
-                                        por coma)</label>
-                                    <input type="text" id="numeros_ganadores" required placeholder="Ej: 05, 12, 44, 89"
-                                        class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700">
-                                </div>
-                                <button type="submit"
-                                    class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded transition">
-                                    Guardar y Recalcular Aciertos
-                                </button>
-                            </form>
+                            <p class="text-sm text-gray-400 mb-4">Ingresa los 20 números de la quiniela (4 cifras cada uno) para los distintos días de la semana.</p>
+                            <button onclick="abrirModalResultados()"
+                                class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg shadow transition flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                Ingresar Nuevos Resultados
+                            </button>
+                        </div>
+
+                        <!-- Modal Carga de Resultados 20 Posiciones -->
+                        <div id="modal-resultados-20" class="hidden fixed inset-0 z-[60] overflow-y-auto bg-black/80 flex items-center justify-center p-4">
+                            <div class="bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-2xl p-6 shadow-2xl">
+                                <h2 class="text-xl font-bold mb-4">Cargar 20 Números del Día</h2>
+                                <form id="form-resultados-20" class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm text-gray-400 uppercase font-bold mb-1">Día de la semana</label>
+                                        <select id="dia_semana_20" required class="w-full px-4 py-2 rounded bg-gray-900 border border-gray-700 font-bold text-white">
+                                            <option value="Lunes">Lunes</option>
+                                            <option value="Martes">Martes</option>
+                                            <option value="Miércoles">Miércoles</option>
+                                            <option value="Jueves">Jueves</option>
+                                            <option value="Viernes">Viernes</option>
+                                            <option value="Sábado">Sábado</option>
+                                            <option value="Domingo">Domingo</option>
+                                        </select>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-6 mt-4">
+                                        <!-- Columna 1 -->
+                                        <div class="space-y-2">
+                                            <h3 class="text-center font-bold text-gray-400 uppercase mb-3">Posiciones 1 al 10</h3>
+                                            <div id="col-resultados-1">
+                                                <!-- Inyectado por JS -->
+                                            </div>
+                                        </div>
+                                        <!-- Columna 2 -->
+                                        <div class="space-y-2">
+                                            <h3 class="text-center font-bold text-gray-400 uppercase mb-3">Posiciones 11 al 20</h3>
+                                            <div id="col-resultados-2">
+                                                <!-- Inyectado por JS -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-3 pt-6">
+                                        <button type="button" onclick="cerrarModalResultados()" class="flex-1 bg-gray-700 hover:bg-gray-600 py-3 rounded-lg transition font-bold">Cancelar</button>
+                                        <button type="submit" class="flex-1 bg-green-600 hover:bg-green-500 py-3 rounded-lg transition font-bold text-white">Guardar y Recalcular</button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
 
                         <div id="resultados-cargados-admin" class="mt-6 space-y-3">
