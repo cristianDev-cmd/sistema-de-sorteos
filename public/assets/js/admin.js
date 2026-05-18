@@ -1171,13 +1171,22 @@ async function cargarResultadosAdmin() {
                 listContainer.innerHTML = '<p class="text-gray-500 text-sm">No hay resultados cargados aún.</p>';
                 return;
             }
-            listContainer.innerHTML = '<h3 class="font-bold text-gray-300 border-b border-gray-700 pb-2 mb-3">Resultados Cargados</h3>';
+            listContainer.innerHTML = `
+                <div class="flex flex-col mb-3">
+                    <h3 class="font-bold text-gray-300 border-b border-gray-700 pb-2">Resultados Cargados</h3>
+                    <p class="text-xs text-gray-400 mt-2 italic"><span class='text-green-400'>* Solo los números en verde (posiciones 1 al 15)</span> se toman en cuenta para los aciertos. Los números en <span class='text-orange-400'>naranja</span> (16 al 20) no.</p>
+                </div>
+            `;
             data.forEach(r => {
+                const numsArray = r.numeros_ganadores_dia.split(',');
+                const numsStyled = numsArray.map((n, idx) => {
+                    return `<span class="${idx < 15 ? 'text-green-400' : 'text-orange-400'}">${n.trim()}</span>`;
+                }).join(',');
                 listContainer.innerHTML += `
-                    <div class="bg-gray-800 p-3 rounded flex justify-between items-center border border-gray-700">
+                    <div class="bg-gray-800 p-3 rounded flex justify-between items-center border border-gray-700 mb-2">
                         <div>
                             <p class="font-bold text-white">${r.dia_semana} (${r.fecha_dia})</p>
-                            <p class="text-sm text-gray-400">Sorteo: ${r.nombre_referencia} | Números: <span class="text-green-400 font-mono">${r.numeros_ganadores_dia}</span></p>
+                            <p class="text-sm text-gray-400">Sorteo: ${r.nombre_referencia} | Números: <span class="font-mono tracking-wider">${numsStyled}</span></p>
                         </div>
                         <div class="flex gap-2">
                             <button onclick="borrarResultado(${r.id})" class="text-xs bg-red-900 hover:bg-red-800 px-2 py-1 rounded text-red-200 transition">Eliminar</button>

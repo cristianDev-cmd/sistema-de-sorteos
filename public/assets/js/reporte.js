@@ -122,17 +122,28 @@ async function cargarReporte(sorteoId = '') {
             if (data.resultados_diarios && data.resultados_diarios.length > 0) {
                 resSec.classList.remove('hidden');
                 data.resultados_diarios.forEach(r => {
-                    r.numeros_ganadores_dia.split(',').forEach(n => {
+                    const numsArray = r.numeros_ganadores_dia.split(',');
+                    numsArray.forEach(n => {
                         if (n.trim()) winningNumbers.push(n.trim());
                     });
+                    
+                    const numsStyled = numsArray.map((n, idx) => {
+                        return `<span class="${idx < 15 ? 'text-green-400' : 'text-orange-400'}">${n.trim()}</span>`;
+                    }).join(' <span class="text-gray-600">-</span> ');
+
                     const div = document.createElement('div');
                     div.className = "bg-gray-800/50 p-4 rounded-xl border border-gray-700/50";
                     div.innerHTML = `
                         <p class="text-indigo-400 font-bold text-xs uppercase mb-1">${r.dia_semana}</p>
-                        <p class="text-white font-mono tracking-widest font-bold">${r.numeros_ganadores_dia.split(',').join(' - ')}</p>
+                        <p class="text-white font-mono tracking-widest font-bold">${numsStyled}</p>
                     `;
                     gridRes.appendChild(div);
                 });
+                
+                const leyenda = document.createElement('p');
+                leyenda.className = "text-xs text-gray-400 mt-2 italic text-center w-full col-span-full";
+                leyenda.innerHTML = "<span class='text-green-400'>* Solo los números en verde (posiciones 1 al 15)</span> se toman en cuenta para los aciertos. Los números en <span class='text-orange-400'>naranja</span> (16 al 20) no.";
+                gridRes.appendChild(leyenda);
             }
 
             renderTabla();
@@ -182,35 +193,47 @@ function renderTabla(filtroNombre = '') {
 
     noJugadas.classList.add('hidden');
 
+    const grouped = {};
     filtradas.forEach(j => {
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-indigo-500/5 transition";
+        if (!grouped[j.nombre_completo]) grouped[j.nombre_completo] = [];
+        grouped[j.nombre_completo].push(j);
+    });
 
-        const nums = j.numeros_elegidos.split(',');
-        const numsHtml = nums.map(n => {
-            const num = n.trim();
-            const isMatch = winningNumbers.some(wn => String(wn).trim() === num);
-            return `<span class="inline-block px-2 py-1 rounded-lg font-black text-base ${isMatch ? 'bg-green-500/20 text-green-400 ring-1 ring-green-500/40' : 'text-gray-400'}">${num}</span>`;
-        }).join(' ');
+    Object.keys(grouped).forEach(nombre => {
+        const trName = document.createElement('tr');
+        trName.className = "bg-gray-800/90 text-white border-t-4 border-gray-700";
+        trName.innerHTML = `<td colspan="3" class="px-5 py-3 font-black text-xl text-indigo-300 uppercase tracking-wide">👤 ${nombre}</td>`;
+        tbody.appendChild(trName);
 
-        let aciertosEmoji = '';
-        let aciertosClass = 'bg-gray-700/40 text-gray-300';
-        if (j.aciertos_actuales === 10)     { aciertosEmoji = '🏆'; aciertosClass = 'bg-yellow-500/20 text-yellow-300'; }
-        else if (j.aciertos_actuales === 9) { aciertosEmoji = '🔥'; aciertosClass = 'bg-purple-500/20 text-purple-300'; }
-        else if (j.aciertos_actuales >= 8)  { aciertosEmoji = '✨'; aciertosClass = 'bg-blue-500/20 text-blue-300'; }
-        else if (j.aciertos_actuales === 0) { aciertosEmoji = '🥗'; aciertosClass = 'bg-orange-500/20 text-orange-300'; }
+        grouped[nombre].forEach(j => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-indigo-500/5 transition";
 
-        tr.innerHTML = `
-            <td class="px-5 py-4 whitespace-nowrap text-base text-gray-400 font-bold">#${j.id}</td>
-            <td class="px-5 py-4 whitespace-nowrap text-lg font-black text-white">${j.nombre_completo}</td>
-            <td class="px-5 py-4 flex flex-wrap gap-1">${numsHtml}</td>
-            <td class="px-5 py-4 whitespace-nowrap text-center">
-                <span class="inline-flex items-center gap-1 px-4 py-2 rounded-xl text-xl font-black ${aciertosClass}">
-                    ${aciertosEmoji} ${j.aciertos_actuales}
-                </span>
-            </td>
-        `;
-        tbody.appendChild(tr);
+            const nums = j.numeros_elegidos.split(',');
+            const numsHtml = nums.map(n => {
+                const num = n.trim();
+                const isMatch = winningNumbers.some(wn => String(wn).trim() === num);
+                return `<span class="inline-block px-2 py-1 rounded-lg font-black text-base ${isMatch ? 'bg-green-500/20 text-green-400 ring-1 ring-green-500/40' : 'text-gray-400'}">${num}</span>`;
+            }).join(' ');
+
+            let aciertosEmoji = '';
+            let aciertosClass = 'bg-gray-700/40 text-gray-300';
+            if (j.aciertos_actuales === 10)     { aciertosEmoji = '🏆'; aciertosClass = 'bg-yellow-500/20 text-yellow-300'; }
+            else if (j.aciertos_actuales === 9) { aciertosEmoji = '🔥'; aciertosClass = 'bg-purple-500/20 text-purple-300'; }
+            else if (j.aciertos_actuales >= 8)  { aciertosEmoji = '✨'; aciertosClass = 'bg-blue-500/20 text-blue-300'; }
+            else if (j.aciertos_actuales === 0) { aciertosEmoji = '🥗'; aciertosClass = 'bg-orange-500/20 text-orange-300'; }
+
+            tr.innerHTML = `
+                <td class="px-5 py-4 whitespace-nowrap text-base text-gray-400 font-bold">#${j.id}</td>
+                <td class="px-5 py-4 flex flex-wrap gap-1">${numsHtml}</td>
+                <td class="px-5 py-4 whitespace-nowrap text-center">
+                    <span class="inline-flex items-center gap-1 px-4 py-2 rounded-xl text-xl font-black ${aciertosClass}">
+                        ${aciertosEmoji} ${j.aciertos_actuales}/10
+                    </span>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
     });
 }
 
