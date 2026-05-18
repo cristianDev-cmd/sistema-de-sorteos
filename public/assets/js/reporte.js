@@ -123,8 +123,12 @@ async function cargarReporte(sorteoId = '') {
                 resSec.classList.remove('hidden');
                 data.resultados_diarios.forEach(r => {
                     const numsArray = r.numeros_ganadores_dia.split(',');
-                    numsArray.forEach(n => {
-                        if (n.trim()) winningNumbers.push(n.trim());
+                    numsArray.forEach((n, idx) => {
+                        if (idx < 15 && n.trim()) {
+                            const val = n.trim();
+                            const decena = val.slice(-2);
+                            winningNumbers.push(decena);
+                        }
                     });
                     
                     const numsStyled = numsArray.map((n, idx) => {
@@ -212,7 +216,8 @@ function renderTabla(filtroNombre = '') {
             const nums = j.numeros_elegidos.split(',');
             const numsHtml = nums.map(n => {
                 const num = n.trim();
-                const isMatch = winningNumbers.some(wn => String(wn).trim() === num);
+                const cleanNum = num.padStart(2, '0');
+                const isMatch = winningNumbers.some(wn => wn === cleanNum || wn === num);
                 return `<span class="inline-block px-2 py-1 rounded-lg font-black text-base ${isMatch ? 'bg-green-500/20 text-green-400 ring-1 ring-green-500/40' : 'text-gray-400'}">${num}</span>`;
             }).join(' ');
 
